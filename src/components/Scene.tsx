@@ -97,14 +97,15 @@ export const Scene = () => {
           if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.05));
         }
 
-        // 2. Tangential force (orbiting motion) - SLOWED DOWN
+        // 2. Tangential force (orbiting motion) - EXTREMELY SLOW
         const up = new THREE.Vector3(0, 1, 0);
         let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
         if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
         
         // Push child along the tangent to create orbit
         if (!stateTo.isDragging) {
-          stateTo.acceleration.add(tangent.multiplyScalar(0.05 * dt));
+          // 0.05 -> 0.002 に変更して、超ゆったりとした軌道に
+          stateTo.acceleration.add(tangent.multiplyScalar(0.002 * dt));
         }
       }
     });
