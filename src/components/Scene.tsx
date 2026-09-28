@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { OrbitControls, Environment, Stars, Sparkles } from '@react-three/drei';
 import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -157,6 +157,10 @@ export const Scene = () => {
       />
 
       <Connections physicsState={physicsState} />
+      
+      {/* 宇宙のチリや星屑（奥行き可視化） */}
+      <Stars radius={100} depth={50} count={3000} factor={3} saturation={0.5} fade speed={1} />
+      <Sparkles count={400} scale={40} size={8} speed={0.2} opacity={0.3} color="#0ff" />
 
       {notes.map(note => (
         <Note key={note.id} note={note} physicsState={physicsState} />
