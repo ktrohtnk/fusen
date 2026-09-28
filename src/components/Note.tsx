@@ -373,14 +373,15 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                 useStore.getState().setIsCreating(true);
               }}
               style={{
-                marginTop: '12px', background: '#0a0f1a', border: `2px solid ${user.color}`, color: user.color,
-                padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                fontSize: '12px', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '1px'
+                marginTop: '16px', background: user.color, border: `2px solid ${user.color}`, color: '#000',
+                padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '14px', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '1px',
+                boxShadow: `4px 4px 0px ${user.color}60`
               }}
-              onMouseOver={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
-              onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
+              onMouseOver={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
+              onMouseOut={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
             >
-              <LinkIcon size={16} strokeWidth={3} /> CREATE SATELLITE
+              <LinkIcon size={18} strokeWidth={3} /> CREATE SATELLITE
             </button>
           </div>
         </Html>
