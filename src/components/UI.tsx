@@ -153,6 +153,7 @@ export const UI = () => {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 borderLeft: `4px solid ${u.color}`,
+                boxShadow: !isChild ? `-4px 0 16px ${u.color}40` : 'none',
                 marginLeft: isChild ? '24px' : '0px',
                 opacity: isChild ? 0.85 : 1,
                 transition: 'background 0.2s',
@@ -161,9 +162,14 @@ export const UI = () => {
               onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === note.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
             >
               <div style={{ color: '#aaa', fontSize: '12px', fontWeight: '500', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: isChild ? '#888' : '#ccc' }}>
+                <span style={{ 
+                  color: isChild ? '#888' : '#fff',
+                  textShadow: isChild ? 'none' : `0 0 6px ${u.color}, 0 0 12px ${u.color}`
+                }}>
                   {isChild ? '↳ 衛星 ' : '● 恒星 '}
-                  {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <span style={{ color: isChild ? '#888' : '#ccc', textShadow: 'none', marginLeft: '4px' }}>
+                    {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </span>
                 <button
                   onClick={(e) => {
