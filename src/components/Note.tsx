@@ -45,6 +45,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
   const focusedNoteId = useStore((state) => state.focusedNoteId);
   const syncNotePosition = useStore((state) => state.syncNotePosition);
   const connections = useStore((state) => state.connections);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const neonTexture = useMemo(() => createNeonGradient(), []);
   const timeOffset = useRef(Math.random() * 100);
@@ -114,6 +115,14 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       const intensity = 1.2 + pulse * 0.8;
       material.color.copy(displayColor).multiplyScalar(intensity);
       material.opacity = 0.9;
+    }
+
+    if (isDeleting && meshRef.current) {
+      // サノスエフェクト: 回転しながら縮む
+      meshRef.current.scale.lerp(new THREE.Vector3(0.01, 0.01, 0.01), 0.05);
+      meshRef.current.rotation.z += 0.2;
+      meshRef.current.rotation.x += 0.1;
+      meshRef.current.position.y += 0.02; // 少し上に舞い上がる
     }
   });
 
@@ -285,7 +294,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
-                    useStore.getState().deleteNote(note.id);
+                    setIsDeleting(true);
+                    setFocusedNoteId(null);
+                    setTimeout(() => {
+                      useStore.getState().deleteNote(note.id);
+                    }, 1500);
                   }
                 }}
                 style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
@@ -350,6 +363,18 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             )}
           </div>
         </Html>
+      )}
+
+      {/* サノスエフェクト用パーティクル */}
+      {isDeleting && (
+        <Sparkles 
+          count={200} 
+          scale={isChild ? [1.5, 1.5, 1.5] : [2.5, 2.5, 2.5]} 
+          size={isChild ? 4 : 6} 
+          speed={4} 
+          color={user.color} 
+          noise={1} 
+        />
       )}
     </group>
   );
