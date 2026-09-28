@@ -107,10 +107,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           color={displayColor} 
           roughness={0.8}
           emissive={displayColor}
-          emissiveIntensity={!isChild ? (isNew ? 0.6 : 0.25) : (isNew ? 0.4 : 0.0)}
+          emissiveIntensity={!isChild ? (isNew ? 4.0 : 1.5) : (isNew ? 2.0 : 0.0)}
           transparent
           opacity={0.95}
           side={THREE.DoubleSide}
+          toneMapped={false}
         />
       </mesh>
 
@@ -124,6 +125,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             opacity={0.5}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
+            toneMapped={false}
           />
         </mesh>
       )}

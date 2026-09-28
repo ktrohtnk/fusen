@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useStore } from '../store';
@@ -156,6 +157,10 @@ export const Scene = () => {
       {notes.map(note => (
         <Note key={note.id} note={note} physicsState={physicsState} />
       ))}
+
+      <EffectComposer disableNormalPass>
+        <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={2.0} />
+      </EffectComposer>
     </>
   );
 };
