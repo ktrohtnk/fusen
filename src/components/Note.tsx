@@ -292,7 +292,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                 onMouseOver={(e) => { e.currentTarget.style.background = '#0ff'; e.currentTarget.style.color = '#000'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#0ff'; }}
               >
-                [X]
+                [X] CANCEL FOCUS
               </button>
             </div>
 

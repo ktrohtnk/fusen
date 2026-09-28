@@ -573,16 +573,7 @@ export const UI = () => {
         </button>
       </div>
 
-      {/* フォーカス解除ボタン */}
-      {focusedNoteId && !isCreating && (
-        <button className="ui-content" onClick={() => setFocusedNoteId(null)}
-          style={{ position: 'absolute', top: 70, left: 20, background: '#0a0f1a', color: '#0ff', border: '2px solid #0ff', boxShadow: '4px 4px 0px rgba(0,255,255,0.5)', padding: '8px 16px', cursor: 'pointer', fontSize: '12px', textTransform: 'uppercase' }}
-          onMouseOver={e => { e.currentTarget.style.background = '#0ff'; e.currentTarget.style.color = '#000'; }}
-          onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = '#0ff'; }}
-        >
-          ← CANCEL FOCUS
-        </button>
-      )}
+
 
       {/* ② ミニマップ */}
       {showMinimap && <Minimap onClose={() => setShowMinimap(false)} />}
