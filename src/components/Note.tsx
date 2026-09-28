@@ -13,9 +13,9 @@ const createNeonGradient = () => {
   
   const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
   gradient.addColorStop(0, 'rgba(255,255,255,0)');      
-  gradient.addColorStop(0.80, 'rgba(255,255,255,0.1)'); // 内側をもっと透明に
-  gradient.addColorStop(0.92, 'rgba(255,255,255,1)');   // シャープで細い光
-  gradient.addColorStop(1, 'rgba(255,255,255,0)');      
+  gradient.addColorStop(0.87, 'rgba(255,255,255,0)');   // 縁の直前まで完全に透明
+  gradient.addColorStop(0.93, 'rgba(255,255,255,0.7)'); // 縁の部分だけで「ふんわり」光る（パキッとさせない）
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');      // すぐに柔らかく消える
   
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 256, 256);
@@ -140,7 +140,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* グラデーション付きの細いエッジ */}
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
-          <planeGeometry args={[2.7, 2.7]} />
+          <planeGeometry args={[2.6, 2.6]} />
           <meshBasicMaterial 
             color={displayColor}
             transparent
