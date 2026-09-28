@@ -1,9 +1,30 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Text, Html, Image as DreiImage } from '@react-three/drei';
+import { Text, Html, Image as DreiImage, Edges } from '@react-three/drei';
 import * as THREE from 'three';
 import { NoteData, useStore, USERS } from '../store';
 import { useDrag } from '@use-gesture/react';
+
+const createNeonGradient = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+  
+  // 中心から外側に向かって、透明 -> 強く発光 -> 透明 となるグラデーション
+  const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+  gradient.addColorStop(0, 'rgba(255,255,255,0)');      // 中心は完全に透明（内側のベース色を見せる）
+  gradient.addColorStop(0.65, 'rgba(255,255,255,0.1)'); // 境目からじんわり光り始める
+  gradient.addColorStop(0.85, 'rgba(255,255,255,1)');   // 縁で最も強く光る
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');      // 外側はフワッと消える
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 256, 256);
+  
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  return texture;
+};
 
 interface NoteProps {
   note: NoteData;
@@ -19,23 +40,24 @@ interface NoteProps {
 
 export const Note = ({ note, physicsState }: NoteProps) => {
   const meshRef = useRef<THREE.Group>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
   const { size, camera } = useThree();
   const setFocusedNoteId = useStore((state) => state.setFocusedNoteId);
   const focusedNoteId = useStore((state) => state.focusedNoteId);
   const syncNotePosition = useStore((state) => state.syncNotePosition);
   const connections = useStore((state) => state.connections);
   
+  const neonTexture = useMemo(() => createNeonGradient(), []);
+  const timeOffset = useRef(Math.random() * 100);
+
   const user = USERS.find(u => u.id === note.user_id) || USERS[0];
   const isFocused = focusedNoteId === note.id;
 
-  // Determine if this is a child note (attached to something)
   const isChild = useMemo(() => connections.some(c => c.to_note_id === note.id), [connections, note.id]);
   
-  // サイズ（恒星は大きく、衛星は小さく四角く）
   const width = isChild ? 1.0 : 2.0;
   const height = isChild ? 0.8 : 1.5;
 
-  // 色の違い（衛星は同一色相で少し暗く/濃くする）
   const baseColor = useMemo(() => new THREE.Color(user.color), [user.color]);
   const displayColor = useMemo(() => {
     return isChild ? baseColor.clone().multiplyScalar(0.8) : baseColor;
@@ -52,9 +74,6 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     };
   }
 
-  const glowRef = useRef<THREE.Mesh>(null);
-  const timeOffset = useRef(Math.random() * 100);
-
   useFrame((state) => {
     if (meshRef.current && physicsState.current[note.id]) {
       const pState = physicsState.current[note.id];
@@ -62,16 +81,13 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       meshRef.current.lookAt(camera.position);
     }
     
-    // 中ではなく、縁（背面の少し大きい平面）をネオンのように光らせる
     if (glowRef.current && !isChild) {
-      const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2; // 0.0 to 1.0
+      const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2;
       const material = glowRef.current.material as THREE.MeshBasicMaterial;
       
-      // 色の強さを1以上にすることでBloom（ネオン効果）を発動させる
-      // ベース2.0 〜 最大4.0の強さでゆっくり明滅
       const intensity = 2.0 + pulse * 2.0;
       material.color.copy(displayColor).multiplyScalar(intensity);
-      material.opacity = 0.8; // しっかりと縁を見せる
+      material.opacity = 1.0;
     }
   });
 
@@ -115,21 +131,21 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <meshStandardMaterial 
           color={displayColor} 
           roughness={0.8}
-          emissive={"#000000"} // 中は光らせない！
+          emissive={"#000000"} 
           transparent
           opacity={0.95}
           side={THREE.DoubleSide}
         />
       </mesh>
 
-      {/* 恒星用の縁の光（本体より少し大きい平面を背後に置き、強く発光させる） */}
+      {/* グラデーション付きのぼやけた縁 */}
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
-          <circleGeometry args={[1.35, 64]} />
+          <planeGeometry args={[3.2, 3.2]} />
           <meshBasicMaterial 
             color={displayColor}
             transparent
-            opacity={0.8}
+            alphaMap={neonTexture}
             depthWrite={false}
             toneMapped={false}
           />
@@ -151,8 +167,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           <Text
             position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
             color="#333333"
-            fontSize={isChild ? 0.15 : 0.25} // 文字を大きく
-            maxWidth={isChild ? width * 0.9 : 2.0} // 幅に合わせて調整
+            fontSize={isChild ? 0.15 : 0.25}
+            maxWidth={isChild ? width * 0.9 : 2.0}
             textAlign="center"
             anchorX="center"
             anchorY="middle"
@@ -179,7 +195,6 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             gap: '8px',
             minWidth: '120px'
           }}>
-            {/* Top Right Action Buttons */}
             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
               <button
                 onClick={(e) => {
