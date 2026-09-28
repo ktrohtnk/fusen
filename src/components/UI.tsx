@@ -447,8 +447,7 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
 // メインUI
 // ──────────────────────────────────────────
 export const UI = () => {
-  const { currentUser, setCurrentUser, addNote, focusedNoteId, setFocusedNoteId, notes, connections } = useStore();
-  const [isCreating, setIsCreating] = useState(false);
+  const { currentUser, setCurrentUser, addNote, focusedNoteId, setFocusedNoteId, notes, connections, isCreating, setIsCreating } = useStore();
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -616,7 +615,7 @@ export const UI = () => {
       )}
 
       {/* FAB */}
-      {!isCreating && (
+      {!isCreating && !focusedNoteId && (
         <button className="ui-content" onClick={() => setIsCreating(true)}
           style={{
             position: 'absolute',
@@ -624,22 +623,18 @@ export const UI = () => {
             right: isMobile ? 'auto' : 20,
             left: isMobile ? '50%' : 'auto',
             transform: isMobile ? 'translateX(-50%)' : 'none',
-            height: isMobile ? '64px' : '56px',
-            padding: '0 24px',
+            height: isMobile ? '72px' : '64px',
+            padding: '0 32px',
             background: '#0a0f1a',
             border: `4px solid ${currentUser.color}`,
             boxShadow: `6px 6px 0px ${currentUser.color}50`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', color: currentUser.color,
-            fontSize: '14px', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', color: currentUser.color,
+            fontSize: '16px', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap',
           }}
           onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
           onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
-          {focusedNoteId ? (
-            <><LinkIcon size={20} /> 衛星をつくる</>
-          ) : (
-            <><Plus size={20} /> 恒星をつくる</>
-          )}
+          <Plus size={32} strokeWidth={3} /> 恒星をつくる
         </button>
       )}
 

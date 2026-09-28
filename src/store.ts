@@ -44,6 +44,8 @@ interface AppState {
   connections: ConnectionData[];
   focusedNoteId: string | null;
   setFocusedNoteId: (id: string | null) => void;
+  isCreating: boolean;
+  setIsCreating: (isCreating: boolean) => void;
   addNote: (text: string, url?: string, parentId?: string, image_url?: string) => void;
   updateNotePhysics: (id: string, position: THREE.Vector3, velocity: THREE.Vector3, rotation: THREE.Euler, angularVelocity: THREE.Euler) => void;
   syncNotePosition: (id: string, position: THREE.Vector3, rotation: THREE.Euler) => void;
@@ -58,6 +60,8 @@ export const useStore = create<AppState>((set, get) => ({
   connections: [],
   focusedNoteId: null,
   setFocusedNoteId: (id) => set({ focusedNoteId: id }),
+  isCreating: false,
+  setIsCreating: (isCreating) => set({ isCreating }),
 
   deleteNote: async (id) => {
     // 楽観的UI更新（すぐに画面から消す）
