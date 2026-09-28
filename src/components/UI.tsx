@@ -624,17 +624,22 @@ export const UI = () => {
             right: isMobile ? 'auto' : 20,
             left: isMobile ? '50%' : 'auto',
             transform: isMobile ? 'translateX(-50%)' : 'none',
-            width: isMobile ? '72px' : '64px',
-            height: isMobile ? '72px' : '64px',
+            height: isMobile ? '64px' : '56px',
+            padding: '0 24px',
             background: '#0a0f1a',
             border: `4px solid ${currentUser.color}`,
             boxShadow: `6px 6px 0px ${currentUser.color}50`,
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentUser.color,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', color: currentUser.color,
+            fontSize: '14px', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap',
           }}
           onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
           onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
-          {focusedNoteId ? <LinkIcon size={28} /> : <Plus size={28} />}
+          {focusedNoteId ? (
+            <><LinkIcon size={20} /> 衛星をつくる</>
+          ) : (
+            <><Plus size={20} /> 恒星をつくる</>
+          )}
         </button>
       )}
 
