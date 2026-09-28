@@ -366,6 +366,22 @@ export const Note = ({ note, physicsState }: NoteProps) => {
               </div>
             )}
 
+            {/* 衛星をつくるボタン */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                useStore.getState().setIsCreating(true);
+              }}
+              style={{
+                marginTop: '12px', background: '#0a0f1a', border: `2px solid ${user.color}`, color: user.color,
+                padding: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '12px', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '1px'
+              }}
+              onMouseOver={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
+              onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
+            >
+              <LinkIcon size={16} strokeWidth={3} /> CREATE SATELLITE
+            </button>
           </div>
         </Html>
       )}
