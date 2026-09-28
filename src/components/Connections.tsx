@@ -47,7 +47,8 @@ export const Connections = ({ physicsState }: ConnectionsProps) => {
 
   return (
     <lineSegments geometry={lineGeometry.current}>
-      <lineBasicMaterial color="#cccccc" transparent opacity={0.3} linewidth={1} />
+      {/* ほんのり光るエネルギーの線（Bloom効果が乗るように明るめに設定） */}
+      <lineBasicMaterial color="#ffffff" transparent opacity={0.15} toneMapped={false} />
     </lineSegments>
   );
 };

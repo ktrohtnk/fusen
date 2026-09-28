@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useStore } from '../store';
 import { Note } from './Note';
+import { Connections } from './Connections';
 
 export const Scene = () => {
   const notes = useStore(state => state.notes);
@@ -153,6 +154,8 @@ export const Scene = () => {
           TWO: THREE.TOUCH.DOLLY_ROTATE
         }}
       />
+
+      <Connections physicsState={physicsState} />
 
       {notes.map(note => (
         <Note key={note.id} note={note} physicsState={physicsState} />
