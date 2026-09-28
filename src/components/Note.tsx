@@ -157,10 +157,10 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <meshStandardMaterial
           color={displayColor}
           roughness={0.8}
-          emissive={isChild ? displayColor : displayColor}
-          emissiveIntensity={isChild ? 0.15 : 0.05}
+          emissive={user.color}
+          emissiveIntensity={isChild ? 0.2 : 0.1}
           transparent
-          opacity={isChild ? 0.55 : 0.35}
+          opacity={isChild ? 0.75 : 0.65}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -244,9 +244,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           anchorX="right"
           anchorY="bottom"
           sdfGlyphSize={64}
-          outlineWidth={0.02}
+          outlineWidth={0.01}
           outlineColor="#000000"
-          toneMapped={false}
         >
           NEW
         </Text>

@@ -125,27 +125,25 @@ export const DrumTimeline = () => {
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0,
-          transformOrigin: 'center center',
-          transform: `translateY(${offset}px)`,
-          transition: dragStartY.current !== null ? 'none' : 'transform 0.2s ease-out',
         }}>
           {sorted.map((note, idx) => {
             const u = USERS.find(u => u.id === note.user_id) || USERS[0];
             const isChild = connections.some(c => c.to_note_id === note.id);
             const isCenterFocused = focusedNoteId === note.id;
 
-            // ドラムの回転角度で奥行きを表現
             const relIdx = idx - centerIndex;
-            const maxAngle = 50; // 最大傾き（度）
-            const angleStep = maxAngle / (VISIBLE_ITEMS / 2);
-            const angle = relIdx * angleStep;
             const absRel = Math.abs(relIdx);
 
             // 見える範囲外は非表示
             if (absRel > HALF + 1) return null;
 
-            const opacity = Math.max(0, 1 - absRel * 0.28);
-            const scale = Math.max(0.6, 1 - absRel * 0.1);
+            const opacity = Math.max(0, 1 - absRel * 0.3);
+            const scale = Math.max(0.65, 1 - absRel * 0.1);
+            // 中央に寄せる動き（ドラム感）
+            const yBase = idx * ITEM_HEIGHT - centerIndex * ITEM_HEIGHT + offset;
+            // 上下に圧縮するため、中央からの距離に応じてY位置を縮める
+            const yCompressed = relIdx * ITEM_HEIGHT * 0.85;
+            const yPos = HALF * ITEM_HEIGHT + yCompressed;
 
             return (
               <div
@@ -153,7 +151,7 @@ export const DrumTimeline = () => {
                 onClick={() => onClickItem(idx)}
                 style={{
                   position: 'absolute',
-                  top: `${idx * ITEM_HEIGHT}px`,
+                  top: `${yPos}px`,
                   left: 0, right: 0,
                   height: `${ITEM_HEIGHT}px`,
                   display: 'flex',
@@ -161,16 +159,11 @@ export const DrumTimeline = () => {
                   gap: '8px',
                   padding: '0 10px',
                   cursor: 'pointer',
+                  transform: `scaleY(${scale})`,
                   transformOrigin: 'center center',
-                  transform: `
-                    translateY(${-centerIndex * ITEM_HEIGHT}px)
-                    rotateX(${-angle}deg)
-                    scale(${scale})
-                  `,
                   opacity,
-                  transition: dragStartY.current !== null ? 'none' : 'transform 0.2s ease-out, opacity 0.2s ease-out',
+                  transition: dragStartY.current !== null ? 'none' : 'top 0.2s ease-out, opacity 0.2s ease-out, transform 0.2s ease-out',
                   zIndex: VISIBLE_ITEMS - absRel,
-                  willChange: 'transform',
                 }}
               >
                 {/* カラードット */}
