@@ -543,7 +543,7 @@ export const UI = () => {
         <div style={{ width: '32px', height: '32px', background: currentUser.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#000' }}>
           {currentUser.name}
         </div>
-        <div style={{ color: 'white', opacity: 0.8, fontSize: '16px', fontWeight: 'bold', letterSpacing: '4px' }}>FUSEN</div>
+        <div style={{ color: 'white', opacity: 0.8, fontSize: '16px', fontWeight: 'bold', letterSpacing: '4px' }}>FUSEN v2</div>
       </div>
 
       {/* 右上ツールバー */}
@@ -634,11 +634,7 @@ export const UI = () => {
           onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
           onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
-          {focusedNoteId ? (
-            <><LinkIcon size={32} strokeWidth={3} /> CREATE SATELLITE</>
-          ) : (
-            <><Plus size={32} strokeWidth={3} /> CREATE STAR</>
-          )}
+          <Plus size={32} strokeWidth={3} /> CREATE STAR
         </button>
       )}
 
