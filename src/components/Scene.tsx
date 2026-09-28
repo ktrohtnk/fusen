@@ -27,11 +27,14 @@ export const Scene = () => {
     // Cap delta to prevent huge jumps on tab switch
     const dt = Math.min(delta, 0.1);
 
-    const states = Object.values(physicsState.current);
+    const statesEntries = Object.entries(physicsState.current);
     
+    // Helper to check if a note is a satellite (child)
+    const isSatellite = (id: string) => connections.some(c => c.to_note_id === id);
+
     // 1. Calculate forces
-    for (let i = 0; i < states.length; i++) {
-      const state = states[i];
+    for (let i = 0; i < statesEntries.length; i++) {
+      const [idI, state] = statesEntries[i];
       if (state.isDragging) continue;
 
       state.acceleration.set(0, 0, 0);
@@ -47,14 +50,32 @@ export const Scene = () => {
         state.acceleration.addScaledVector(state.position, -0.01 * dt);
       }
 
-      // Repulsion between all notes to avoid complete overlap
-      for (let j = 0; j < states.length; j++) {
+      const isStarI = !isSatellite(idI);
+
+      // Repulsion between notes
+      for (let j = 0; j < statesEntries.length; j++) {
         if (i === j) continue;
-        const other = states[j];
+        const [idJ, other] = statesEntries[j];
+        const isStarJ = !isSatellite(idJ);
+
         const diff = new THREE.Vector3().subVectors(state.position, other.position);
         const dist = diff.length();
-        if (dist > 0 && dist < 2.5) {
-          state.acceleration.addScaledVector(diff.normalize(), (1 / (dist * dist)) * 0.2 * dt);
+        
+        let repulseRadius = 2.5;
+        let repulseForce = 0.2;
+
+        if (isStarI && isStarJ) {
+          // 恒星同士は遠ざける（ソーシャルディスタンスを大きく）
+          repulseRadius = 12.0; 
+          repulseForce = 1.0;
+        } else if (!isStarI && !isStarJ) {
+          // 衛星同士
+          repulseRadius = 1.5;
+          repulseForce = 0.1;
+        }
+
+        if (dist > 0 && dist < repulseRadius) {
+          state.acceleration.addScaledVector(diff.normalize(), (1 / (dist * dist)) * repulseForce * dt);
         }
       }
     }
@@ -89,8 +110,8 @@ export const Scene = () => {
     });
 
     // 2. Integrate
-    for (let i = 0; i < states.length; i++) {
-      const state = states[i];
+    for (let i = 0; i < statesEntries.length; i++) {
+      const [_, state] = statesEntries[i];
       if (state.isDragging) {
         state.velocity.multiplyScalar(0.9);
         continue;

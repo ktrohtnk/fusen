@@ -4,13 +4,18 @@ import { Send, Plus, Link as LinkIcon, X, Image as ImageIcon } from 'lucide-reac
 import { supabase } from '../supabase';
 
 export const UI = () => {
-  const { currentUser, setCurrentUser, addNote, focusedNoteId, setFocusedNoteId } = useStore();
+  const { currentUser, setCurrentUser, addNote, focusedNoteId, setFocusedNoteId, notes, connections } = useStore();
   const [isCreating, setIsCreating] = useState(false);
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  // 恒星（親ノート）のリストを取得し、古い順（最新が下）にソート
+  const stars = notes
+    .filter(n => !connections.some(c => c.to_note_id === n.id))
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   if (!currentUser) {
     return (
@@ -87,6 +92,51 @@ export const UI = () => {
           {currentUser.name}
         </div>
         <div style={{ color: 'white', opacity: 0.5, fontSize: '14px' }}>Thought Space</div>
+      </div>
+
+      {/* 恒星（Stars）のリスト（タイムライン風） */}
+      <div 
+        className="ui-content"
+        style={{ 
+          position: 'absolute', 
+          top: 80, 
+          left: 20, 
+          bottom: 40,
+          width: '240px',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          paddingRight: '10px'
+        }}
+      >
+        <div style={{ color: '#fff', opacity: 0.5, fontSize: '12px', marginBottom: '8px' }}>STARS (恒星)</div>
+        {stars.map(star => {
+          const u = USERS.find(u => u.id === star.user_id) || USERS[0];
+          return (
+            <div 
+              key={star.id}
+              onClick={() => setFocusedNoteId(star.id)}
+              style={{
+                background: focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                padding: '12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                borderLeft: `4px solid ${u.color}`,
+                transition: 'background 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+              onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
+            >
+              <div style={{ color: '#aaa', fontSize: '10px', marginBottom: '4px' }}>
+                {new Date(star.created_at).toLocaleDateString()}
+              </div>
+              <div style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {star.text || (star.image_url ? '[画像]' : '無題の恒星')}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Floating Action Button */}
