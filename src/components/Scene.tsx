@@ -92,7 +92,8 @@ export const Scene = () => {
         if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
         
         if (!stateTo.isDragging) {
-          stateTo.acceleration.add(tangent.multiplyScalar(0.008 * dt));
+          // 軌道に乗ってちゃんと周回するように力を大幅に強くする (0.008 -> 0.05)
+          stateTo.acceleration.add(tangent.multiplyScalar(0.05 * dt));
         }
       }
     });
