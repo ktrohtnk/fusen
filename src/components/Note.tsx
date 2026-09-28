@@ -46,6 +46,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
   const focusedNoteId = useStore((state) => state.focusedNoteId);
   const syncNotePosition = useStore((state) => state.syncNotePosition);
   const connections = useStore((state) => state.connections);
+  const currentUser = useStore((state) => state.currentUser);
   const [isDeleting, setIsDeleting] = useState(false);
   
   const neonTexture = useMemo(() => createNeonGradient(), []);
@@ -291,24 +292,26 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             fontFamily: 'inherit'
           }}>
             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
-                    setIsDeleting(true);
-                    setFocusedNoteId(null);
-                    setTimeout(() => {
-                      useStore.getState().deleteNote(note.id);
-                    }, 1500);
-                  }
-                }}
-                style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
-                title="消滅させる"
-                onMouseOver={(e) => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = user.color; }}
-              >
-                DEL
-              </button>
+              {currentUser?.id === note.user_id && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
+                      setIsDeleting(true);
+                      setFocusedNoteId(null);
+                      setTimeout(() => {
+                        useStore.getState().deleteNote(note.id);
+                      }, 1500);
+                    }
+                  }}
+                  style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
+                  title="消滅させる"
+                  onMouseOver={(e) => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = user.color; }}
+                >
+                  DEL
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
