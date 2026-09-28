@@ -118,12 +118,17 @@ const SearchPalette = ({ onClose }: { onClose: () => void }) => {
 
   const panelStyle: React.CSSProperties = isMobile ? {
     position: 'absolute',
-    top: 0, left: 0, right: 0,
-    width: '100%',
+    top: '10%', left: '50%',
+    transform: 'translateX(-50%)',
+    width: '90%',
+    maxWidth: '400px',
     background: '#0a0f1a',
     border: '4px solid #0ff',
     boxShadow: '0 8px 0px rgba(0,255,255,0.4)',
     zIndex: 100,
+    boxSizing: 'border-box',
+    maxHeight: '80vh',
+    overflowY: 'auto',
   } : {
     position: 'absolute',
     top: '50%', left: '50%',
@@ -225,14 +230,16 @@ const CalendarView = ({ onClose, onSelectDate }: { onClose: () => void, onSelect
   return (
     <div style={isMobile ? {
       position: 'absolute',
-      top: 0, left: 0, right: 0, bottom: 0,
-      width: '100%',
-      height: '100%',
+      top: '5%', left: '50%',
+      transform: 'translateX(-50%)',
+      width: '95%',
+      maxHeight: '90vh',
       background: '#0a0f1a',
       border: '4px solid #f0f',
       boxShadow: 'none',
       zIndex: 100,
       overflowY: 'auto',
+      boxSizing: 'border-box',
     } : {
       position: 'absolute',
       top: '50%', left: '50%',
@@ -242,6 +249,7 @@ const CalendarView = ({ onClose, onSelectDate }: { onClose: () => void, onSelect
       border: '4px solid #f0f',
       boxShadow: '8px 8px 0px rgba(255,0,255,0.4)',
       zIndex: 100,
+      boxSizing: 'border-box',
     }} className="ui-content">
       {/* ヘッダー */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '2px solid #f0f' }}>
@@ -345,13 +353,16 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
 
   const panelStyle: React.CSSProperties = isMobile ? {
     position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    width: '100%',
-    height: '100%',
+    top: '10%', left: '50%',
+    transform: 'translateX(-50%)',
+    width: '95%',
+    height: '80vh',
     background: 'rgba(10, 15, 26, 0.95)',
     zIndex: 90,
     overflowY: 'auto',
-    padding: '60px 20px 100px 20px',
+    padding: '20px',
+    boxSizing: 'border-box',
+    border: '2px solid #ff0',
   } : {
     position: 'absolute',
     top: 80, left: 20, bottom: 20,
@@ -360,6 +371,7 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
     zIndex: 90,
     overflowY: 'auto',
     pointerEvents: 'none',
+    boxSizing: 'border-box',
   };
 
   return (
@@ -628,17 +640,32 @@ export const UI = () => {
 
       {/* 投稿モーダル */}
       {isCreating && (
-        <div className="ui-content" style={{
+        <div className="ui-content" style={isMobile ? {
           position: 'absolute',
-          bottom: 0,
-          right: 0,
-          left: isMobile ? 0 : 'auto',
-          width: isMobile ? '100%' : '320px',
+          top: '20%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '90%',
+          maxWidth: '400px',
           background: '#0a0f1a',
           padding: '20px',
           boxShadow: `8px 8px 0px ${currentUser.color}50`,
           border: `4px solid ${currentUser.color}`,
           color: '#e0e0e0', fontFamily: 'inherit',
+          boxSizing: 'border-box',
+          zIndex: 200,
+        } : {
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: '320px',
+          background: '#0a0f1a',
+          padding: '20px',
+          boxShadow: `8px 8px 0px ${currentUser.color}50`,
+          border: `4px solid ${currentUser.color}`,
+          color: '#e0e0e0', fontFamily: 'inherit',
+          boxSizing: 'border-box',
+          zIndex: 200,
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ fontWeight: 'bold', color: currentUser.color, letterSpacing: '2px', textShadow: '2px 2px 0px #000' }}>
