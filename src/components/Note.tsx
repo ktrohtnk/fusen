@@ -402,7 +402,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             onMouseOver={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
             onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
           >
-            <LinkIcon size={24} strokeWidth={3} /> 衛星をつくる
+            <LinkIcon size={24} strokeWidth={3} /> CREATE SATELLITE
           </button>
         </Html>
       )}

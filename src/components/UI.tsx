@@ -634,7 +634,7 @@ export const UI = () => {
           onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
           onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
-          <Plus size={32} strokeWidth={3} /> 恒星をつくる
+          <Plus size={32} strokeWidth={3} /> CREATE STAR
         </button>
       )}
 
