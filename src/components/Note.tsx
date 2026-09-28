@@ -341,8 +341,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
               </div>
             )}
 
-            {/* 衛星へのジャンプリンク（恒星がフォーカスされている時） */}
-            {!isChild && connections.some(c => c.from_note_id === note.id) && (
+            {/* 衛星へのジャンプリンク */}
+            {connections.some(c => c.from_note_id === note.id) && (
               <div style={{ marginTop: '8px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
                 <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>衛星へジャンプ:</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
@@ -371,8 +371,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       )}
 
       {/* 衛星をつくるボタン（付箋の右下） */}
-      {isFocused && !isChild && (
-        <Html position={[1.4, -1.2, 0]} center zIndexRange={[100, 0]}>
+      {isFocused && (
+        <Html position={[isChild ? 0.8 : 1.4, isChild ? -0.8 : -1.2, 0]} center zIndexRange={[100, 0]}>
           <button
             onClick={(e) => {
               e.stopPropagation();
