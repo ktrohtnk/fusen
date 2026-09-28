@@ -208,11 +208,13 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           <Text
             position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
             color="#333333"
-            fontSize={isChild ? 0.15 : 0.25}
-            maxWidth={isChild ? width * 0.9 : 2.0}
+            fontSize={isChild ? 0.14 : 0.18}
+            maxWidth={isChild ? width * 0.85 : 1.4}
+            lineHeight={1.3}
             textAlign="center"
             anchorX="center"
             anchorY="middle"
+            overflowWrap="break-word"
           >
             {note.text}
           </Text>
