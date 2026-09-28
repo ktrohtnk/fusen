@@ -371,8 +371,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       )}
 
       {/* 衛星をつくるボタン（付箋の右下） */}
-      {isFocused && (
-        <Html position={[isChild ? 0.8 : 1.4, isChild ? -0.8 : -1.2, 0]} center zIndexRange={[100, 0]}>
+      {isFocused && !isDeleting && (
+        <Html position={[isChild ? 1.0 : 1.4, isChild ? -1.0 : -1.2, 0]} center zIndexRange={[100, 0]}>
           <button
             onClick={(e) => {
               e.stopPropagation();
