@@ -62,11 +62,16 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       meshRef.current.lookAt(camera.position);
     }
     
-    // 恒星のゆっくりとした明滅（呼吸するような光）
+    // 中ではなく、縁（背面の少し大きい平面）をネオンのように光らせる
     if (glowRef.current && !isChild) {
       const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2; // 0.0 to 1.0
       const material = glowRef.current.material as THREE.MeshBasicMaterial;
-      material.opacity = 0.15 + pulse * 0.4; // 0.15 から 0.55 の間を行き来する
+      
+      // 色の強さを1以上にすることでBloom（ネオン効果）を発動させる
+      // ベース2.0 〜 最大4.0の強さでゆっくり明滅
+      const intensity = 2.0 + pulse * 2.0;
+      material.color.copy(displayColor).multiplyScalar(intensity);
+      material.opacity = 0.8; // しっかりと縁を見せる
     }
   });
 
@@ -106,24 +111,21 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <meshStandardMaterial 
           color={displayColor} 
           roughness={0.8}
-          emissive={displayColor}
-          emissiveIntensity={!isChild ? (isNew ? 4.0 : 1.5) : (isNew ? 2.0 : 0.0)}
+          emissive={"#000000"} // 中は光らせない！
           transparent
           opacity={0.95}
           side={THREE.DoubleSide}
-          toneMapped={false}
         />
       </mesh>
 
-      {/* 恒星用のゆっくり明滅するオーラ（縁の光） */}
+      {/* 恒星用の縁の光（本体より少し大きい平面を背後に置き、強く発光させる） */}
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
-          <planeGeometry args={[width + 0.3, height + 0.3]} />
+          <planeGeometry args={[width + 0.15, height + 0.15]} />
           <meshBasicMaterial 
             color={displayColor}
             transparent
-            opacity={0.5}
-            blending={THREE.AdditiveBlending}
+            opacity={0.8}
             depthWrite={false}
             toneMapped={false}
           />
