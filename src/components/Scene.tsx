@@ -39,15 +39,15 @@ export const Scene = () => {
 
       state.acceleration.set(0, 0, 0);
 
-      // Add random drifting force (Brownian motion)
-      state.acceleration.x += (Math.random() - 0.5) * 0.01 * dt;
-      state.acceleration.y += (Math.random() - 0.5) * 0.01 * dt;
-      state.acceleration.z += (Math.random() - 0.5) * 0.01 * dt;
+      // Add random drifting force (Brownian motion) - Reduced so it doesn't overpower orbit
+      state.acceleration.x += (Math.random() - 0.5) * 0.002 * dt;
+      state.acceleration.y += (Math.random() - 0.5) * 0.002 * dt;
+      state.acceleration.z += (Math.random() - 0.5) * 0.002 * dt;
 
       // Very weak center gravity so they don't fly away forever
       const distToCenter = state.position.length();
       if (distToCenter > 0) {
-        state.acceleration.addScaledVector(state.position, -0.01 * dt);
+        state.acceleration.addScaledVector(state.position, -0.005 * dt);
       }
 
       const isStarI = !isSatellite(idI);
@@ -65,11 +65,9 @@ export const Scene = () => {
         let repulseForce = 0.2;
 
         if (isStarI && isStarJ) {
-          // 恒星同士は遠ざける（ソーシャルディスタンスを大きく）
           repulseRadius = 12.0; 
           repulseForce = 1.0;
         } else if (!isStarI && !isStarJ) {
-          // 衛星同士
           repulseRadius = 1.5;
           repulseForce = 0.1;
         }
@@ -97,15 +95,15 @@ export const Scene = () => {
           if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.05));
         }
 
-        // 2. Tangential force (orbiting motion) - EXTREMELY SLOW
+        // 2. Tangential force (orbiting motion)
         const up = new THREE.Vector3(0, 1, 0);
         let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
         if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
         
         // Push child along the tangent to create orbit
         if (!stateTo.isDragging) {
-          // 0.05 -> 0.002 に変更して、超ゆったりとした軌道に
-          stateTo.acceleration.add(tangent.multiplyScalar(0.002 * dt));
+          // Set to 0.008: fast enough to overcome Brownian motion, but slow enough to be readable (approx 20s orbit)
+          stateTo.acceleration.add(tangent.multiplyScalar(0.008 * dt));
         }
       }
     });
