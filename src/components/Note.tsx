@@ -239,13 +239,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {isNew && (
         <Text
           position={isChild ? [width / 2 - 0.05, height / 2 + 0.08, 0.03] : [0.9, 0.9, 0.03]}
-          color="#ff0066"
-          fontSize={isChild ? 0.09 : 0.12}
+          color="#ffffff"
+          fontSize={isChild ? 0.08 : 0.10}
           anchorX="right"
           anchorY="bottom"
           sdfGlyphSize={64}
-          outlineWidth={0.01}
-          outlineColor="#000000"
         >
           NEW
         </Text>

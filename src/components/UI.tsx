@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore, USERS } from '../store';
 import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X } from 'lucide-react';
 import { supabase } from '../supabase';
-import { DrumTimeline } from './DrumTimeline';
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
@@ -455,9 +454,6 @@ export const UI = () => {
 
       {/* ⑤ カレンダービュー */}
       {showCalendar && <CalendarView onClose={() => setShowCalendar(false)} />}
-
-      {/* ドラム式タイムライン */}
-      {!isCreating && <DrumTimeline />}
 
       {/* FAB */}
       {!isCreating && (
