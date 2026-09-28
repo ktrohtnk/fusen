@@ -171,8 +171,8 @@ export const Scene = () => {
         makeDefault
         minDistance={2}
         maxDistance={50}
-        dollySpeed={0.5}
-        truckSpeed={0.5}
+        dollySpeed={1.0}
+        truckSpeed={3.0} // ドラッグ（平行移動）のスピードを大幅にアップ
         polarAngle={Math.PI / 2} // start looking somewhat level
         mouseButtons={{
           left: 2, // ACTION.TRUCK (pan)
