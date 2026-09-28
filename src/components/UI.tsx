@@ -387,34 +387,37 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
               key={note.id}
               onClick={() => setFocusedNoteId(isFocused ? null : note.id)}
               style={{
-                background: isFocused ? `${u.color}33` : 'rgba(10, 15, 26, 0.8)',
-                borderLeft: `4px solid ${u.color}`,
-                border: isFocused ? `2px solid ${u.color}` : '2px solid transparent',
-                borderLeftWidth: '4px',
+                background: isFocused ? u.color : '#0a0f1a',
+                color: isFocused ? '#000' : '#fff',
                 padding: '12px',
                 cursor: 'pointer',
-                boxShadow: isFocused ? `4px 4px 0px ${u.color}50` : '4px 4px 0px rgba(0,0,0,0.5)',
-                transition: 'all 0.1s',
-                marginLeft: isChild ? '24px' : '0',
-                position: 'relative',
+                border: `2px solid ${u.color}`,
+                boxShadow: `4px 4px 0px ${u.color}50`,
+                marginLeft: isChild ? '24px' : '0px',
+                opacity: isChild ? 0.85 : 1,
               }}
-              onMouseOver={e => e.currentTarget.style.transform = 'translate(-2px, -2px)'}
-              onMouseOut={e => e.currentTarget.style.transform = 'translate(0, 0)'}
+              onMouseOver={(e) => {
+                if (!isFocused) {
+                  e.currentTarget.style.background = `${u.color}33`;
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!isFocused) {
+                  e.currentTarget.style.background = '#0a0f1a';
+                }
+              }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ color: u.color, fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', textShadow: `0 0 4px ${u.color}` }}>
-                  {isChild ? '↳ ' : ''}{u.name}
-                </span>
-                <span style={{ color: '#666', fontSize: '10px' }}>
-                  {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <div style={{ color: isFocused ? '#000' : '#aaa', fontSize: '10px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>
+                  {isChild ? '↳ SAT ' : '● STAR '}
+                  <span style={{ marginLeft: '4px' }}>
+                    {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </span>
               </div>
-              <div style={{ color: '#fff', fontSize: '14px', lineHeight: '1.4', overflowWrap: 'break-word', letterSpacing: '0.5px' }}>
-                {note.text}
+              <div style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {note.text || (note.image_url ? '[IMAGE]' : '---')}
               </div>
-              {note.image_url && (
-                <div style={{ marginTop: '8px', border: `2px solid ${u.color}`, height: '80px', backgroundImage: `url(${note.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-              )}
             </div>
           );
         })}
