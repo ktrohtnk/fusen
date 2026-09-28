@@ -17,34 +17,56 @@ export const UI = () => {
 
   if (!currentUser) {
     return (
-      <div className="ui-layer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(26, 31, 46, 0.9)' }}>
-        <div className="ui-content" style={{ background: 'white', padding: '40px', borderRadius: '12px', textAlign: 'center', maxWidth: '400px' }}>
-          <h1 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: 'normal' }}>Who are you?</h1>
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+      <div className="ui-layer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1a1f2e 0%, #0a0f1a 100%)' }}>
+        <div className="ui-content" style={{ 
+          background: 'rgba(10, 15, 30, 0.7)', 
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05)',
+          padding: '60px', 
+          borderRadius: '4px', 
+          textAlign: 'center', 
+          maxWidth: '500px',
+          color: '#fff',
+          fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
+        }}>
+          <h1 style={{ margin: '0 0 32px 0', fontSize: '28px', fontWeight: 'bold', letterSpacing: '4px', color: '#fff' }}>SYSTEM LOGIN</h1>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {USERS.map(u => (
               <button
                 key={u.id}
                 onClick={() => setCurrentUser(u)}
                 style={{
-                  width: '60px',
-                  height: '60px',
+                  width: '64px',
+                  height: '64px',
                   borderRadius: '50%',
-                  border: `2px solid ${u.color}`,
-                  background: 'transparent',
-                  fontSize: '24px',
+                  border: `2px solid ${u.color}50`,
+                  background: 'rgba(0,0,0,0.5)',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
                   cursor: 'pointer',
-                  color: '#333',
-                  transition: 'all 0.2s',
+                  color: u.color,
+                  boxShadow: `0 0 15px ${u.color}20`,
+                  transition: 'all 0.3s',
                 }}
-                onMouseOver={(e) => e.currentTarget.style.background = `${u.color}33`}
-                onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = `${u.color}20`;
+                  e.currentTarget.style.boxShadow = `0 0 30px ${u.color}60`;
+                  e.currentTarget.style.borderColor = u.color;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(0,0,0,0.5)';
+                  e.currentTarget.style.boxShadow = `0 0 15px ${u.color}20`;
+                  e.currentTarget.style.borderColor = `${u.color}50`;
+                }}
               >
                 {u.name}
               </button>
             ))}
           </div>
-          <p style={{ marginTop: '24px', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
-            This is a closed space FUSEN for A, B, C, D, E, and F. <br/>Thoughts drift, connect, and remain forever.
+          <p style={{ marginTop: '40px', color: '#888', fontSize: '12px', lineHeight: '1.8', letterSpacing: '1px' }}>
+            THIS IS A CLOSED SPACE FUSEN FOR A, B, C, D, E, AND F.<br/>
+            <span style={{ color: '#aaa' }}>THOUGHTS DRIFT, CONNECT, AND REMAIN FOREVER.</span>
           </p>
         </div>
       </div>
@@ -207,14 +229,24 @@ export const UI = () => {
             width: '60px',
             height: '60px',
             borderRadius: '50%',
-            background: 'white',
-            border: 'none',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            background: 'rgba(10, 15, 30, 0.6)',
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${currentUser.color}50`,
+            boxShadow: `0 0 20px ${currentUser.color}30`,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#333'
+            color: currentUser.color,
+            transition: 'all 0.3s'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(10, 15, 30, 0.9)';
+            e.currentTarget.style.boxShadow = `0 0 30px ${currentUser.color}60`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(10, 15, 30, 0.6)';
+            e.currentTarget.style.boxShadow = `0 0 20px ${currentUser.color}30`;
           }}
         >
           {focusedNoteId ? <LinkIcon size={24} /> : <Plus size={24} />}
@@ -228,16 +260,19 @@ export const UI = () => {
           bottom: 40,
           right: 40,
           width: '320px',
-          background: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '16px',
+          background: 'rgba(10, 15, 30, 0.85)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '8px',
           padding: '20px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-          borderTop: `4px solid ${currentUser.color}`
+          boxShadow: `0 10px 40px rgba(0,0,0,0.5), inset 0 0 15px ${currentUser.color}20`,
+          border: `1px solid ${currentUser.color}40`,
+          borderTop: `4px solid ${currentUser.color}`,
+          color: '#e0e0e0',
+          fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ fontWeight: 'bold', color: '#333' }}>
-              {focusedNoteId ? 'Attach a thought' : 'Drop a thought'}
+            <div style={{ fontWeight: 'bold', color: currentUser.color, letterSpacing: '1px' }}>
+              {focusedNoteId ? 'ATTACH SIGNAL' : 'DROP SIGNAL'}
             </div>
             <button 
               onClick={() => {
@@ -253,15 +288,17 @@ export const UI = () => {
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <textarea
               autoFocus
-              placeholder="What's on your mind?"
+              placeholder="Transmit your thought..."
               value={text}
               onChange={e => setText(e.target.value)}
               style={{
                 width: '100%',
                 minHeight: '100px',
                 padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid #ddd',
+                borderRadius: '4px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.4)',
+                color: '#fff',
                 resize: 'none',
                 fontFamily: 'inherit',
                 fontSize: '14px'
@@ -275,8 +312,10 @@ export const UI = () => {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                borderRadius: '8px',
-                border: '1px solid #ddd',
+                borderRadius: '4px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.4)',
+                color: '#fff',
                 fontFamily: 'inherit',
                 fontSize: '14px'
               }}

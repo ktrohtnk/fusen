@@ -195,18 +195,22 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <Html position={[isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]} center zIndexRange={[100, 0]}>
           <div style={{
             position: 'relative',
-            background: 'rgba(255, 255, 255, 0.95)',
+            background: 'rgba(10, 15, 30, 0.85)',
+            backdropFilter: 'blur(8px)',
             padding: '16px 20px 12px 12px',
-            borderRadius: '12px',
+            borderRadius: '4px',
+            border: `1px solid ${user.color}40`,
+            boxShadow: `0 0 20px ${user.color}20, inset 0 0 10px ${user.color}10`,
+            color: '#e0e0e0',
             fontSize: '12px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
             pointerEvents: 'auto',
             whiteSpace: 'nowrap',
-            borderLeft: `4px solid ${user.color}`,
+            borderLeft: `3px solid ${user.color}`,
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
-            minWidth: '120px'
+            minWidth: '120px',
+            fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
           }}>
             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
               <button
@@ -216,10 +220,10 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                     useStore.getState().deleteNote(note.id);
                   }
                 }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: 0.6, padding: '4px' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: 0.6, padding: '4px', filter: 'grayscale(100%) brightness(200%)' }}
                 title="消滅させる"
-                onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-                onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+                onMouseOver={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none'; }}
+                onMouseOut={(e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.filter = 'grayscale(100%) brightness(200%)'; }}
               >
                 💥
               </button>
@@ -228,18 +232,18 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                   e.stopPropagation();
                   setFocusedNoteId(null);
                 }}
-                style={{ background: '#f0f0f0', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}
+                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '2px', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
                 title="閉じる"
-                onMouseOver={(e) => e.currentTarget.style.background = '#e0e0e0'}
-                onMouseOut={(e) => e.currentTarget.style.background = '#f0f0f0'}
+                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
               >
                 ✕
               </button>
             </div>
 
             <div>
-              <div style={{ fontWeight: 'bold' }}>{user.name}</div>
-              <div style={{ color: '#666', fontSize: '10px', margin: '4px 0' }}>
+              <div style={{ fontWeight: 'bold', color: user.color, letterSpacing: '1px' }}>{user.name}</div>
+              <div style={{ color: '#888', fontSize: '10px', margin: '4px 0', fontFamily: 'monospace' }}>
                 {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
               </div>
             </div>
