@@ -12,10 +12,8 @@ export const UI = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
-  // 恒星（親ノート）のリストを取得し、古い順（最新が下）にソート
-  const stars = notes
-    .filter(n => !connections.some(c => c.to_note_id === n.id))
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  // すべての思考（恒星も衛星も）を取得し、古い順（最新が下）にソート
+  const timelineNotes = [...notes].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   if (!currentUser) {
     return (
@@ -124,7 +122,7 @@ export const UI = () => {
         </button>
       )}
 
-      {/* 恒星（Stars）のリスト（タイムライン風） */}
+      {/* タイムライン */}
       <div 
         className="ui-content"
         style={{ 
@@ -140,33 +138,38 @@ export const UI = () => {
           paddingRight: '10px'
         }}
       >
-        <div style={{ color: '#fff', opacity: 0.5, fontSize: '12px', marginBottom: '8px' }}>STARS (恒星)</div>
-        {stars.map(star => {
-          const u = USERS.find(u => u.id === star.user_id) || USERS[0];
+        <div style={{ color: '#fff', opacity: 0.5, fontSize: '12px', marginBottom: '8px' }}>TIMELINE</div>
+        {timelineNotes.map(note => {
+          const u = USERS.find(u => u.id === note.user_id) || USERS[0];
+          const isChild = connections.some(c => c.to_note_id === note.id);
+
           return (
             <div 
-              key={star.id}
-              onClick={() => setFocusedNoteId(star.id)}
+              key={note.id}
+              onClick={() => setFocusedNoteId(note.id)}
               style={{
-                background: focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                background: focusedNoteId === note.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
                 padding: '12px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 borderLeft: `4px solid ${u.color}`,
+                marginLeft: isChild ? '24px' : '0px',
+                opacity: isChild ? 0.85 : 1,
                 transition: 'background 0.2s',
               }}
               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
+              onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === note.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
             >
               <div style={{ color: '#aaa', fontSize: '12px', fontWeight: '500', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>
-                  {new Date(star.created_at).toLocaleDateString()} {new Date(star.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <span style={{ color: isChild ? '#888' : '#ccc' }}>
+                  {isChild ? '↳ 衛星 ' : '● 恒星 '}
+                  {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm('この恒星（と思考の繋がりすべて）を完全に消滅させますか？')) {
-                      useStore.getState().deleteNote(star.id);
+                    if (window.confirm(isChild ? 'この衛星（付箋）を消滅させますか？' : 'この恒星（と思考の繋がりすべて）を完全に消滅させますか？')) {
+                      useStore.getState().deleteNote(note.id);
                     }
                   }}
                   style={{
@@ -179,7 +182,7 @@ export const UI = () => {
                 </button>
               </div>
               <div style={{ color: '#fff', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.4' }}>
-                {star.text || (star.image_url ? '[画像]' : '無題の恒星')}
+                {note.text || (note.image_url ? '[画像]' : (isChild ? '無題の衛星' : '無題の恒星'))}
               </div>
             </div>
           );
