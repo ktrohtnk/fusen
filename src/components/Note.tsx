@@ -370,38 +370,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         </Html>
       )}
 
-      {/* 衛星をつくるボタン（付箋の右下） */}
-      {isFocused && !isDeleting && (
-        <Html position={[isChild ? 1.0 : 1.4, isChild ? -1.0 : -1.2, 0]} center zIndexRange={[100, 0]}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              useStore.getState().setIsCreating(true);
-            }}
-            style={{
-              background: '#0a0f1a',
-              border: `4px solid ${user.color}`,
-              color: user.color,
-              padding: '12px 24px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              fontFamily: 'inherit',
-              letterSpacing: '2px',
-              boxShadow: `4px 4px 0px ${user.color}50`,
-              whiteSpace: 'nowrap'
-            }}
-            onMouseOver={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
-            onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
-          >
-            <LinkIcon size={24} strokeWidth={3} /> CREATE SATELLITE
-          </button>
-        </Html>
-      )}
+
       {/* サノスエフェクト用パーティクル */}
       {isDeleting && (
         <Sparkles 
