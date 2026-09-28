@@ -74,26 +74,37 @@ export const Scene = () => {
     }
 
     connections.forEach(conn => {
+      const parentIsStar = !isSatellite(conn.from_note_id);
       const stateFrom = physicsState.current[conn.from_note_id];
       const stateTo = physicsState.current[conn.to_note_id];
       if (stateFrom && stateTo) {
-        const diff = new THREE.Vector3().subVectors(stateTo.position, stateFrom.position);
-        const dist = diff.length();
-        
-        const targetDist = 2.5;
-        if (dist > 0.1) {
-          const radialForce = diff.clone().normalize().multiplyScalar((targetDist - dist) * 0.5 * dt);
-          if (!stateTo.isDragging) stateTo.acceleration.add(radialForce);
-          if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.05));
-        }
+        if (parentIsStar) {
+          const diff = new THREE.Vector3().subVectors(stateTo.position, stateFrom.position);
+          const dist = diff.length();
+          
+          const targetDist = 2.5;
+          if (dist > 0.1) {
+            const radialForce = diff.clone().normalize().multiplyScalar((targetDist - dist) * 0.5 * dt);
+            if (!stateTo.isDragging) stateTo.acceleration.add(radialForce);
+            if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.05));
+          }
 
-        const up = new THREE.Vector3(0, 1, 0);
-        let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
-        if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
-        
-        if (!stateTo.isDragging) {
-          // 軌道に乗って周回する力（少し遅めにする）
-          stateTo.acceleration.add(tangent.multiplyScalar(0.02 * dt));
+          const up = new THREE.Vector3(0, 1, 0);
+          let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
+          if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
+          
+          if (!stateTo.isDragging) {
+            stateTo.acceleration.add(tangent.multiplyScalar(0.02 * dt));
+          }
+        } else {
+          // 衛星の衛星：親の下に連なるように固定する（回転せず、重なる）
+          const targetPos = stateFrom.position.clone().add(new THREE.Vector3(0.1, -0.4, 0.05));
+          const diffToTarget = new THREE.Vector3().subVectors(targetPos, stateTo.position);
+          
+          if (!stateTo.isDragging) {
+            stateTo.acceleration.add(diffToTarget.multiplyScalar(10.0 * dt)); // 強めに引っ張る
+            stateTo.velocity.multiplyScalar(0.8); // 動きを抑えてピタッとくっつける
+          }
         }
       }
     });

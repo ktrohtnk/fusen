@@ -24,17 +24,24 @@ export const Connections = ({ physicsState }: ConnectionsProps) => {
     
     let offset = 0;
     connections.forEach(conn => {
-      const stateFrom = physicsState.current[conn.from_note_id];
-      const stateTo = physicsState.current[conn.to_note_id];
+      const parentIsStar = !connections.some(c => c.to_note_id === conn.from_note_id);
       
-      if (stateFrom && stateTo) {
-        positions[offset * 6] = stateFrom.position.x;
-        positions[offset * 6 + 1] = stateFrom.position.y;
-        positions[offset * 6 + 2] = stateFrom.position.z;
+      if (parentIsStar) {
+        const stateFrom = physicsState.current[conn.from_note_id];
+        const stateTo = physicsState.current[conn.to_note_id];
         
-        positions[offset * 6 + 3] = stateTo.position.x;
-        positions[offset * 6 + 4] = stateTo.position.y;
-        positions[offset * 6 + 5] = stateTo.position.z;
+        if (stateFrom && stateTo) {
+          positions[offset * 6] = stateFrom.position.x;
+          positions[offset * 6 + 1] = stateFrom.position.y;
+          positions[offset * 6 + 2] = stateFrom.position.z;
+          
+          positions[offset * 6 + 3] = stateTo.position.x;
+          positions[offset * 6 + 4] = stateTo.position.y;
+          positions[offset * 6 + 5] = stateTo.position.z;
+        }
+      } else {
+        // Zero out the line
+        for (let i = 0; i < 6; i++) positions[offset * 6 + i] = 0;
       }
       offset++;
     });
