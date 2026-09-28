@@ -276,9 +276,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {isFocused && (
         <Html 
           position={
-            size.width < 640 
-              ? [0, isChild ? -height / 2 - 1.2 : -1.8, 0] // スマホ版：真下に配置して横幅のはみ出しを防ぐ
-              : [isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]
+            isChild 
+              ? [0, 0, 0.5] // 衛星の場合：付箋のド真ん中（少し手前）に表示して絶対に見切れさせない
+              : size.width < 640 
+                ? [0, 0, 1.0] // 恒星かつスマホの場合：ド真ん中に表示
+                : [1.1, 1.1, 0] // 恒星かつPCの場合：右上
           } 
           center 
           zIndexRange={[100, 0]}
