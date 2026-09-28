@@ -161,7 +161,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     >
       <mesh receiveShadow castShadow>
         {isChild ? (
-          <planeGeometry args={[width, height]} />
+          <boxGeometry args={[width, height, 0.05]} />
         ) : (
           <circleGeometry args={[1.2, 64]} />
         )}

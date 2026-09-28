@@ -98,7 +98,8 @@ export const Scene = () => {
           }
         } else {
           // 衛星の衛星：親の下に連なるように固定する（回転せず、重なる）
-          const targetPos = stateFrom.position.clone().add(new THREE.Vector3(0.1, -0.4, 0.05));
+          // クリックを阻害しないように、親より少し奥(-0.1)に配置する
+          const targetPos = stateFrom.position.clone().add(new THREE.Vector3(0.1, -0.4, -0.1));
           const diffToTarget = new THREE.Vector3().subVectors(targetPos, stateTo.position);
           
           if (!stateTo.isDragging) {
