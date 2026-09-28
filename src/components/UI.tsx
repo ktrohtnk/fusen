@@ -94,12 +94,42 @@ export const UI = () => {
         <div style={{ color: 'white', opacity: 0.5, fontSize: '14px' }}>Thought Space</div>
       </div>
 
+      {/* わかりやすいフォーカス解除（戻る）ボタン */}
+      {focusedNoteId && !isCreating && (
+        <button
+          className="ui-content"
+          onClick={() => setFocusedNoteId(null)}
+          style={{
+            position: 'absolute',
+            top: 70,
+            left: 20,
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: 'white',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            cursor: 'pointer',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            transition: 'background 0.2s',
+            zIndex: 10
+          }}
+          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+        >
+          ← 宇宙空間に戻る (フォーカス解除)
+        </button>
+      )}
+
       {/* 恒星（Stars）のリスト（タイムライン風） */}
       <div 
         className="ui-content"
         style={{ 
           position: 'absolute', 
-          top: 80, 
+          top: focusedNoteId ? 120 : 80, // 戻るボタンがある時は少し下げる
           left: 20, 
           bottom: 40,
           width: '240px',

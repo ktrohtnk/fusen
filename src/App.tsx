@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <Canvas>
+      <Canvas onPointerMissed={() => useStore.getState().setFocusedNoteId(null)}>
         <Scene />
       </Canvas>
       <UI />
