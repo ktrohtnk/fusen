@@ -10,6 +10,10 @@ body, html, #root {
   color: #fff;
   font-family: 'DotGothic16', 'Space Mono', monospace, sans-serif;
   image-rendering: pixelated;
+  touch-action: none; /* スマホのタッチ操作をキャンバスに渡す */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 * {

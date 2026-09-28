@@ -3,6 +3,16 @@ import { useStore, USERS } from '../store';
 import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X } from 'lucide-react';
 import { supabase } from '../supabase';
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
+};
+
 // ──────────────────────────────────────────
 // ② ミニマップ
 // ──────────────────────────────────────────
@@ -11,8 +21,9 @@ const Minimap = () => {
   const connections = useStore(s => s.connections);
   const focusedNoteId = useStore(s => s.focusedNoteId);
   const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
+  const isMobile = useIsMobile();
 
-  const SIZE = 160;
+  const SIZE = isMobile ? 110 : 160;
   const SCALE = 5; // 3D座標 → ピクセルのスケール
 
   // 全ノードの座標を中心(SIZE/2)を原点にマッピング
@@ -24,8 +35,9 @@ const Minimap = () => {
   return (
     <div style={{
       position: 'absolute',
-      bottom: 120,
-      right: 20,
+      bottom: isMobile ? 108 : 112,
+      right: isMobile ? 'auto' : 20,
+      left: isMobile ? 8 : 'auto',
       width: SIZE,
       height: SIZE,
       background: '#000',
@@ -82,6 +94,7 @@ const SearchPalette = ({ onClose }: { onClose: () => void }) => {
   const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
@@ -95,17 +108,27 @@ const SearchPalette = ({ onClose }: { onClose: () => void }) => {
     );
   }).slice(0, 12);
 
+  const panelStyle: React.CSSProperties = isMobile ? {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    width: '100%',
+    background: '#0a0f1a',
+    border: '4px solid #0ff',
+    boxShadow: '0 8px 0px rgba(0,255,255,0.4)',
+    zIndex: 100,
+  } : {
+    position: 'absolute',
+    top: '50%', left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '480px',
+    background: '#0a0f1a',
+    border: '4px solid #0ff',
+    boxShadow: '8px 8px 0px rgba(0,255,255,0.4)',
+    zIndex: 100,
+  };
+
   return (
-    <div style={{
-      position: 'absolute',
-      top: '50%', left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '480px',
-      background: '#0a0f1a',
-      border: '4px solid #0ff',
-      boxShadow: '8px 8px 0px rgba(0,255,255,0.4)',
-      zIndex: 100,
-    }} className="ui-content">
+    <div style={panelStyle} className="ui-content">
       <div style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid #0ff', padding: '12px 16px', gap: '8px' }}>
         <Search size={16} color="#0ff" />
         <input
@@ -169,6 +192,7 @@ const CalendarView = ({ onClose }: { onClose: () => void }) => {
   const notes = useStore(s => s.notes);
   const connections = useStore(s => s.connections);
   const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
+  const isMobile = useIsMobile();
   const [currentMonth, setCurrentMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -191,7 +215,17 @@ const CalendarView = ({ onClose }: { onClose: () => void }) => {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div style={{
+    <div style={isMobile ? {
+      position: 'absolute',
+      top: 0, left: 0, right: 0, bottom: 0,
+      width: '100%',
+      height: '100%',
+      background: '#0a0f1a',
+      border: '4px solid #f0f',
+      boxShadow: 'none',
+      zIndex: 100,
+      overflowY: 'auto',
+    } : {
       position: 'absolute',
       top: '50%', left: '50%',
       transform: 'translate(-50%, -50%)',
@@ -291,6 +325,7 @@ export const UI = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showMinimap, setShowMinimap] = useState(true);
+  const isMobile = useIsMobile();
 
   // キーボードショートカット (Space or Cmd+K で検索)
   useEffect(() => {
@@ -423,9 +458,21 @@ export const UI = () => {
       {/* FAB */}
       {!isCreating && (
         <button className="ui-content" onClick={() => setIsCreating(true)}
-          style={{ position: 'absolute', bottom: 40, right: 20, width: '64px', height: '64px', background: '#0a0f1a', border: `4px solid ${currentUser.color}`, boxShadow: `6px 6px 0px ${currentUser.color}50`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentUser.color }}
-          onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.transform = 'translate(2px,2px)'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
-          onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.transform = 'translate(0,0)'; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
+          style={{
+            position: 'absolute',
+            bottom: 24,
+            right: isMobile ? 'auto' : 20,
+            left: isMobile ? '50%' : 'auto',
+            transform: isMobile ? 'translateX(-50%)' : 'none',
+            width: isMobile ? '72px' : '64px',
+            height: isMobile ? '72px' : '64px',
+            background: '#0a0f1a',
+            border: `4px solid ${currentUser.color}`,
+            boxShadow: `6px 6px 0px ${currentUser.color}50`,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentUser.color,
+          }}
+          onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
+          onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
           {focusedNoteId ? <LinkIcon size={28} /> : <Plus size={28} />}
         </button>
@@ -433,7 +480,18 @@ export const UI = () => {
 
       {/* 投稿モーダル */}
       {isCreating && (
-        <div className="ui-content" style={{ position: 'absolute', bottom: 40, right: 20, width: '320px', background: '#0a0f1a', padding: '20px', boxShadow: `8px 8px 0px ${currentUser.color}50`, border: `4px solid ${currentUser.color}`, color: '#e0e0e0', fontFamily: 'inherit' }}>
+        <div className="ui-content" style={{
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          left: isMobile ? 0 : 'auto',
+          width: isMobile ? '100%' : '320px',
+          background: '#0a0f1a',
+          padding: '20px',
+          boxShadow: `8px 8px 0px ${currentUser.color}50`,
+          border: `4px solid ${currentUser.color}`,
+          color: '#e0e0e0', fontFamily: 'inherit',
+        }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ fontWeight: 'bold', color: currentUser.color, letterSpacing: '2px', textShadow: '2px 2px 0px #000' }}>
               {focusedNoteId ? 'ATTACH SIGNAL' : 'DROP SIGNAL'}
