@@ -178,21 +178,21 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         </>
       )}
 
-      {/* 日付の表示 */}
+      {/* 日付と時間の表示 */}
       <Text
         position={isChild 
           ? [width / 2 - 0.05, -height / 2 + 0.05, 0.02] 
           : [0, -0.9, 0.02]}
         color="#555555"
-        fontSize={isChild ? 0.06 : 0.08}
+        fontSize={isChild ? 0.05 : 0.07} // 少し小さくして時間が収まるように
         anchorX={isChild ? "right" : "center"}
         anchorY="bottom"
       >
-        {new Date(note.created_at).toLocaleDateString()}
+        {`${new Date(note.created_at).toLocaleDateString()} ${new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
       </Text>
 
       {isFocused && (
-        <Html position={[isChild ? width / 2 + 0.2 : 1.4, isChild ? -height / 2 + 0.2 : -1.0, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]} center zIndexRange={[100, 0]}>
           <div style={{
             position: 'relative',
             background: 'rgba(255, 255, 255, 0.95)',
