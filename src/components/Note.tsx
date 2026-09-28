@@ -94,23 +94,13 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       <mesh receiveShadow castShadow>
         <planeGeometry args={[2, 1.5]} />
         <meshStandardMaterial 
-          color="#faf9f6" 
+          color={user.color} 
           roughness={0.8}
-          emissive={isNew ? new THREE.Color(user.color).multiplyScalar(0.2) : "#000000"}
+          emissive={isNew ? new THREE.Color(user.color).multiplyScalar(0.5) : "#000000"}
           transparent
-          opacity={0.9}
+          opacity={0.95}
           side={THREE.DoubleSide}
         />
-      </mesh>
-      
-      {/* User color accent (e.g. thin line at top) */}
-      <mesh position={[0, 0.73, 0.01]}>
-        <planeGeometry args={[2, 0.04]} />
-        <meshBasicMaterial color={user.color} />
-      </mesh>
-      <mesh position={[0, 0.73, -0.01]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[2, 0.04]} />
-        <meshBasicMaterial color={user.color} />
       </mesh>
 
       {/* Text Content */}

@@ -32,39 +32,45 @@ export const Scene = () => {
     // 1. Calculate forces
     for (let i = 0; i < states.length; i++) {
       const state = states[i];
-      if (state.isDragging) continue; // Don't apply physics while dragging
+      if (state.isDragging) continue;
 
       state.acceleration.set(0, 0, 0);
 
-      // Weak center gravity
+      // Add random drifting force (Brownian motion)
+      state.acceleration.x += (Math.random() - 0.5) * 0.01 * dt;
+      state.acceleration.y += (Math.random() - 0.5) * 0.01 * dt;
+      state.acceleration.z += (Math.random() - 0.5) * 0.01 * dt;
+
+      // Very weak center gravity so they don't fly away forever
       const distToCenter = state.position.length();
       if (distToCenter > 0) {
-        state.acceleration.addScaledVector(state.position, -0.05 * dt);
+        state.acceleration.addScaledVector(state.position, -0.01 * dt);
       }
 
-      // Repulsion between all notes
+      // Repulsion between all notes to avoid complete overlap
       for (let j = 0; j < states.length; j++) {
         if (i === j) continue;
         const other = states[j];
         const diff = new THREE.Vector3().subVectors(state.position, other.position);
         const dist = diff.length();
-        if (dist > 0 && dist < 4) {
-          state.acceleration.addScaledVector(diff.normalize(), (1 / (dist * dist)) * 0.5 * dt);
+        if (dist > 0 && dist < 2.5) {
+          state.acceleration.addScaledVector(diff.normalize(), (1 / (dist * dist)) * 0.2 * dt);
         }
       }
     }
 
-    // Attraction between connected notes
+    // Attraction between connected notes (like stacked papers)
     connections.forEach(conn => {
       const stateFrom = physicsState.current[conn.from_note_id];
       const stateTo = physicsState.current[conn.to_note_id];
       if (stateFrom && stateTo) {
         const diff = new THREE.Vector3().subVectors(stateTo.position, stateFrom.position);
         const dist = diff.length();
-        if (dist > 2) {
-          const force = diff.normalize().multiplyScalar((dist - 2) * 0.5 * dt);
+        // Target distance is very small (e.g., 0.2) to make them look overlapping
+        if (dist > 0.2) {
+          const force = diff.normalize().multiplyScalar((dist - 0.2) * 2.0 * dt);
           if (!stateFrom.isDragging) stateFrom.acceleration.add(force);
-          if (!stateTo.isDragging) stateTo.acceleration.sub(force); // Equal and opposite
+          if (!stateTo.isDragging) stateTo.acceleration.sub(force);
         }
       }
     });
@@ -73,26 +79,23 @@ export const Scene = () => {
     for (let i = 0; i < states.length; i++) {
       const state = states[i];
       if (state.isDragging) {
-        // Just apply heavy damping to velocity while dragging so when let go it has realistic inertia
         state.velocity.multiplyScalar(0.9);
         continue;
       }
 
       state.velocity.add(state.acceleration);
-      // Damping (water-like resistance)
-      state.velocity.multiplyScalar(0.98);
+      // Less damping to allow more floating
+      state.velocity.multiplyScalar(0.99);
       
       state.position.add(state.velocity);
 
-      // Angular physics
-      state.rotation.x += state.angularVelocity.x;
-      state.rotation.y += state.angularVelocity.y;
-      state.rotation.z += state.angularVelocity.z;
+      // Keep upright: Force rotation.x and rotation.z to 0
+      state.rotation.x = 0;
+      state.rotation.z = 0;
       
-      // Angular damping
-      state.angularVelocity.x *= 0.99;
+      // Let it slowly drift in Y (yaw) to face different ways gently
+      state.rotation.y += state.angularVelocity.y;
       state.angularVelocity.y *= 0.99;
-      state.angularVelocity.z *= 0.99;
     }
   });
 
@@ -140,7 +143,6 @@ export const Scene = () => {
         <Note key={note.id} note={note} physicsState={physicsState} />
       ))}
 
-      <Connections physicsState={physicsState} />
     </>
   );
 };
