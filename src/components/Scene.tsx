@@ -114,12 +114,12 @@ export const Scene = () => {
 
     if (focusedNoteId && physicsState.current[focusedNoteId]) {
       const targetPos = physicsState.current[focusedNoteId].position;
-      const cameraTargetPos = targetPos.clone().add(new THREE.Vector3(0, 0, 5));
+      const cameraTargetPos = targetPos.clone().add(new THREE.Vector3(0, 0, 2.5));
       
-      state.camera.position.lerp(cameraTargetPos, 0.05);
+      state.camera.position.lerp(cameraTargetPos, 0.15);
       
       if (controlsRef.current) {
-        controlsRef.current.target.lerp(targetPos, 0.05);
+        controlsRef.current.target.lerp(targetPos, 0.15);
       }
     }
   });
