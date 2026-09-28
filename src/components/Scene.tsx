@@ -141,6 +141,7 @@ export const Scene = () => {
         minDistance={2}
         maxDistance={50}
         panSpeed={2.0}
+        zoomSpeed={2.0}
       />
 
       {notes.map(note => (
