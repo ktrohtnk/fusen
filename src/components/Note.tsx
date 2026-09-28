@@ -274,7 +274,15 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       )}
 
       {isFocused && (
-        <Html position={[isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]} center zIndexRange={[100, 0]}>
+        <Html 
+          position={
+            size.width < 640 
+              ? [0, isChild ? -height / 2 - 1.2 : -1.8, 0] // スマホ版：真下に配置して横幅のはみ出しを防ぐ
+              : [isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]
+          } 
+          center 
+          zIndexRange={[100, 0]}
+        >
           <div style={{
             position: 'relative',
             background: 'rgba(10, 15, 30, 0.95)',
