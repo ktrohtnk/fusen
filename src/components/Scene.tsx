@@ -167,7 +167,7 @@ export const Scene = () => {
       ))}
 
       <EffectComposer disableNormalPass>
-        <Pixelation granularity={4} />
+        <Pixelation granularity={2} />
         <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={1.0} />
       </EffectComposer>
     </>

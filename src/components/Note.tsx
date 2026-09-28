@@ -137,7 +137,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
   }, { pointerEvents: true });
 
   const age = (Date.now() - new Date(note.created_at).getTime()) / 1000;
-  const isNew = age < 60; 
+  const isNew = age < 21600; // 6時間以内はNEW
 
   return (
     <group 
@@ -154,13 +154,13 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         ) : (
           <circleGeometry args={[1.2, 64]} />
         )}
-        <meshStandardMaterial 
-          color={displayColor} 
+        <meshStandardMaterial
+          color={displayColor}
           roughness={0.8}
-          emissive={isChild ? displayColor : "#000000"} 
-          emissiveIntensity={isChild ? 0.4 : 0.0}
+          emissive={isChild ? displayColor : displayColor}
+          emissiveIntensity={isChild ? 0.15 : 0.05}
           transparent
-          opacity={0.95}
+          opacity={isChild ? 0.55 : 0.35}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -169,7 +169,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
           <planeGeometry args={[2.6, 2.6]} />
-          <meshBasicMaterial 
+          <meshBasicMaterial
             color={displayColor}
             transparent
             alphaMap={neonTexture}
@@ -182,10 +182,9 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* 衛星の位置を示すレーダー矢印（恒星の淵） */}
       {!isChild && childIds.map(childId => (
         <mesh key={`indicator-${childId}`} name={`indicator-${childId}`}>
-          {/* 半径, 高さ, 分割数3で平らな三角形を作る */}
           <coneGeometry args={[0.08, 0.15, 3]} />
-          <meshBasicMaterial 
-            color={displayColor} 
+          <meshBasicMaterial
+            color={displayColor}
             toneMapped={false}
             transparent
             opacity={0.8}
@@ -194,12 +193,12 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       ))}
 
       {note.image_url && (
-        <DreiImage 
-          url={note.image_url} 
-          position={[0, note.text ? 0.3 : 0, 0.01]} 
-          scale={isChild ? [width * 0.8, height * 0.5] : [1.6, 1.0]} 
-          transparent 
-          opacity={0.9} 
+        <DreiImage
+          url={note.image_url}
+          position={[0, note.text ? 0.3 : 0, 0.01]}
+          scale={isChild ? [width * 0.8, height * 0.5] : [1.6, 1.0]}
+          transparent
+          opacity={0.9}
         />
       )}
 
@@ -207,14 +206,17 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <>
           <Text
             position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
-            color="#333333"
-            fontSize={isChild ? 0.14 : 0.18}
+            color={isChild ? '#1a1a1a' : '#ffffff'}
+            fontSize={isChild ? 0.13 : 0.17}
             maxWidth={isChild ? width * 0.85 : 1.4}
             lineHeight={1.3}
             textAlign="center"
             anchorX="center"
             anchorY="middle"
             overflowWrap="break-word"
+            font="https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEi75vY0rw-oME.woff"
+            sdfGlyphSize={128}
+            fontWeight={700}
           >
             {note.text}
           </Text>
@@ -223,16 +225,34 @@ export const Note = ({ note, physicsState }: NoteProps) => {
 
       {/* 日付と時間の表示 */}
       <Text
-        position={isChild 
-          ? [width / 2 - 0.05, -height / 2 + 0.05, 0.02] 
+        position={isChild
+          ? [width / 2 - 0.05, -height / 2 + 0.05, 0.02]
           : [0, -0.9, 0.02]}
-        color="#555555"
-        fontSize={isChild ? 0.05 : 0.07} // 少し小さくして時間が収まるように
+        color={isChild ? '#333333' : '#aaaaaa'}
+        fontSize={isChild ? 0.05 : 0.065}
         anchorX={isChild ? "right" : "center"}
         anchorY="bottom"
+        sdfGlyphSize={64}
       >
         {`${new Date(note.created_at).toLocaleDateString()} ${new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
       </Text>
+
+      {/* NEW バッジ（6時間以内の投稿） */}
+      {isNew && (
+        <Text
+          position={isChild ? [width / 2 - 0.05, height / 2 + 0.08, 0.03] : [0.9, 0.9, 0.03]}
+          color="#ff0066"
+          fontSize={isChild ? 0.09 : 0.12}
+          anchorX="right"
+          anchorY="bottom"
+          sdfGlyphSize={64}
+          outlineWidth={0.02}
+          outlineColor="#000000"
+          toneMapped={false}
+        >
+          NEW
+        </Text>
+      )}
 
       {isFocused && (
         <Html position={[isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]} center zIndexRange={[100, 0]}>
