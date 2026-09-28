@@ -16,7 +16,7 @@ const useIsMobile = () => {
 // ──────────────────────────────────────────
 // ② ミニマップ
 // ──────────────────────────────────────────
-const Minimap = () => {
+const Minimap = ({ onClose }: { onClose: () => void }) => {
   const notes = useStore(s => s.notes);
   const connections = useStore(s => s.connections);
   const focusedNoteId = useStore(s => s.focusedNoteId);
@@ -44,7 +44,10 @@ const Minimap = () => {
       border: '2px solid #0ff',
       boxShadow: '4px 4px 0px rgba(0,255,255,0.3)',
     }}>
-      <div style={{ position: 'absolute', top: 2, left: 4, fontSize: '9px', color: '#0ff', letterSpacing: '1px' }}>RADAR</div>
+      <div style={{ position: 'absolute', top: 2, left: 4, fontSize: '9px', color: '#0ff', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', width: 'calc(100% - 8px)', alignItems: 'center' }}>
+        <span>RADAR</span>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#0ff', cursor: 'pointer', padding: '2px', lineHeight: 1 }}>✕</button>
+      </div>
       <svg width={SIZE} height={SIZE} style={{ display: 'block' }}>
         {/* グリッドライン */}
         <line x1={SIZE/2} y1={0} x2={SIZE/2} y2={SIZE} stroke="#0ff" strokeOpacity={0.1} strokeWidth={1} />
@@ -582,7 +585,7 @@ export const UI = () => {
       )}
 
       {/* ② ミニマップ */}
-      {showMinimap && <Minimap />}
+      {showMinimap && <Minimap onClose={() => setShowMinimap(false)} />}
 
       {/* ③ 検索パレット */}
       {showSearch && <SearchPalette onClose={() => setShowSearch(false)} />}
