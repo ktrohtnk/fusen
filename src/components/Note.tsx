@@ -107,7 +107,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       }}
     >
       <mesh receiveShadow castShadow>
-        <planeGeometry args={[width, height]} />
+        {isChild ? (
+          <planeGeometry args={[width, height]} />
+        ) : (
+          <circleGeometry args={[1.2, 64]} />
+        )}
         <meshStandardMaterial 
           color={displayColor} 
           roughness={0.8}
@@ -121,7 +125,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* 恒星用の縁の光（本体より少し大きい平面を背後に置き、強く発光させる） */}
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
-          <planeGeometry args={[width + 0.15, height + 0.15]} />
+          <circleGeometry args={[1.35, 64]} />
           <meshBasicMaterial 
             color={displayColor}
             transparent
@@ -136,7 +140,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <DreiImage 
           url={note.image_url} 
           position={[0, note.text ? 0.3 : 0, 0.01]} 
-          scale={[width * 0.8, height * 0.5]} 
+          scale={isChild ? [width * 0.8, height * 0.5] : [1.6, 1.0]} 
           transparent 
           opacity={0.9} 
         />
@@ -147,8 +151,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           <Text
             position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
             color="#333333"
-            fontSize={isChild ? 0.1 : 0.15}
-            maxWidth={width * 0.8}
+            fontSize={isChild ? 0.15 : 0.25} // 文字を大きく
+            maxWidth={isChild ? width * 0.9 : 2.0} // 幅に合わせて調整
             textAlign="center"
             anchorX="center"
             anchorY="middle"
@@ -159,7 +163,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       )}
 
       {isFocused && (
-        <Html position={[width / 2 + 0.2, -height / 2 + 0.2, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[isChild ? width / 2 + 0.2 : 1.4, isChild ? -height / 2 + 0.2 : -1.0, 0]} center zIndexRange={[100, 0]}>
           <div style={{
             position: 'relative',
             background: 'rgba(255, 255, 255, 0.95)',
