@@ -44,7 +44,7 @@ export const UI = () => {
             ))}
           </div>
           <p style={{ marginTop: '24px', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
-            This is a closed space FUSEN for K, H, and A. <br/>Thoughts drift, connect, and remain forever.
+            This is a closed space FUSEN for A, B, C, D, E, and F. <br/>Thoughts drift, connect, and remain forever.
           </p>
         </div>
       </div>
