@@ -98,7 +98,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <meshStandardMaterial 
           color={displayColor} 
           roughness={0.8}
-          emissive={isNew ? displayColor.clone().multiplyScalar(0.5) : "#000000"}
+          emissive={displayColor}
+          emissiveIntensity={!isChild ? (isNew ? 0.6 : 0.25) : (isNew ? 0.4 : 0.0)}
           transparent
           opacity={0.95}
           side={THREE.DoubleSide}
