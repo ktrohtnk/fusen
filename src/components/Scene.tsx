@@ -70,20 +70,20 @@ export const Scene = () => {
         // 1. Radial spring (pull to orbit radius of ~2.5)
         const targetDist = 2.5;
         if (dist > 0.1) {
-          const radialForce = diff.clone().normalize().multiplyScalar((targetDist - dist) * 1.5 * dt);
+          const radialForce = diff.clone().normalize().multiplyScalar((targetDist - dist) * 0.5 * dt);
           if (!stateTo.isDragging) stateTo.acceleration.add(radialForce);
           // Parent doesn't get pulled as much by satellite
-          if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.1));
+          if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.05));
         }
 
-        // 2. Tangential force (orbiting motion)
+        // 2. Tangential force (orbiting motion) - SLOWED DOWN
         const up = new THREE.Vector3(0, 1, 0);
         let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
-        if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); // fallback if diff is exactly UP
+        if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
         
         // Push child along the tangent to create orbit
         if (!stateTo.isDragging) {
-          stateTo.acceleration.add(tangent.multiplyScalar(1.0 * dt));
+          stateTo.acceleration.add(tangent.multiplyScalar(0.05 * dt));
         }
       }
     });

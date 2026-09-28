@@ -47,7 +47,9 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     if (meshRef.current && physicsState.current[note.id]) {
       const state = physicsState.current[note.id];
       meshRef.current.position.copy(state.position);
-      meshRef.current.rotation.copy(state.rotation);
+      
+      // 文字が常に読みやすいように、常にカメラの方を向かせる（ビルボード化）
+      meshRef.current.lookAt(camera.position);
     }
   });
 
