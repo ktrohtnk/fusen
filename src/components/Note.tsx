@@ -1,6 +1,6 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Text, Html, Image as DreiImage, Edges } from '@react-three/drei';
+import { Text, Html, Image as DreiImage, Edges, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 import { NoteData, useStore, USERS } from '../store';
 import { useDrag } from '@use-gesture/react';
