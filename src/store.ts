@@ -45,6 +45,7 @@ interface AppState {
   addNote: (text: string, url?: string, parentId?: string, image_url?: string) => void;
   updateNotePhysics: (id: string, position: THREE.Vector3, velocity: THREE.Vector3, rotation: THREE.Euler, angularVelocity: THREE.Euler) => void;
   syncNotePosition: (id: string, position: THREE.Vector3, rotation: THREE.Euler) => void;
+  deleteNote: (id: string) => Promise<void>;
   fetchInitialData: () => Promise<void>;
 }
 
@@ -55,6 +56,26 @@ export const useStore = create<AppState>((set, get) => ({
   connections: [],
   focusedNoteId: null,
   setFocusedNoteId: (id) => set({ focusedNoteId: id }),
+
+  deleteNote: async (id) => {
+    // 楽観的UI更新（すぐに画面から消す）
+    set((state) => ({
+      notes: state.notes.filter(n => n.id !== id),
+      connections: state.connections.filter(c => c.from_note_id !== id && c.to_note_id !== id),
+      focusedNoteId: state.focusedNoteId === id ? null : state.focusedNoteId
+    }));
+
+    if (supabase) {
+      try {
+        // 関連する接続を先に削除
+        await supabase.from('connections').delete().or(`from_note_id.eq.${id},to_note_id.eq.${id}`);
+        // ノート本体を削除
+        await supabase.from('notes').delete().eq('id', id);
+      } catch (e) {
+        console.error("Failed to delete from supabase", e);
+      }
+    }
+  },
 
   addNote: async (text, url, parentId, image_url) => {
     const { currentUser, notes, focusedNoteId } = get();

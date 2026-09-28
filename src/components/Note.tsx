@@ -144,19 +144,48 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
             pointerEvents: 'auto',
             whiteSpace: 'nowrap',
-            borderLeft: `4px solid ${user.color}`
+            borderLeft: `4px solid ${user.color}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
           }}>
-            <div style={{ fontWeight: 'bold' }}>{user.name}</div>
-            <div style={{ color: '#666', fontSize: '10px', margin: '4px 0' }}>
-              {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
+            <div>
+              <div style={{ fontWeight: 'bold' }}>{user.name}</div>
+              <div style={{ color: '#666', fontSize: '10px', margin: '4px 0' }}>
+                {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
+              </div>
             </div>
+            
             {note.url && (
-              <div style={{ marginTop: '8px' }}>
+              <div>
                 <a href={note.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
                   {note.url}
                 </a>
               </div>
             )}
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
+                  useStore.getState().deleteNote(note.id);
+                }
+              }}
+              style={{
+                marginTop: '4px',
+                padding: '4px 8px',
+                background: '#ffeeee',
+                color: '#cc0000',
+                border: '1px solid #ffcccc',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 'bold',
+                alignSelf: 'flex-start'
+              }}
+            >
+              💥 惑星を消滅させる
+            </button>
           </div>
         </Html>
       )}
