@@ -39,10 +39,14 @@ export const Scene = () => {
 
       state.acceleration.set(0, 0, 0);
 
-      // Add random drifting force (Brownian motion) - Reduced so it doesn't overpower orbit
-      state.acceleration.x += (Math.random() - 0.5) * 0.002 * dt;
-      state.acceleration.y += (Math.random() - 0.5) * 0.002 * dt;
-      state.acceleration.z += (Math.random() - 0.5) * 0.002 * dt;
+      // Add smooth drifting force (using sine waves over time)
+      const time = Date.now() * 0.001;
+      // Use part of the ID to give each note a unique phase offset so they don't all drift the exact same way
+      const idHash = parseInt(idI.substring(0, 4), 16); 
+      
+      state.acceleration.x += Math.sin(time * 0.5 + idHash) * 0.001 * dt;
+      state.acceleration.y += Math.cos(time * 0.4 + idHash) * 0.001 * dt;
+      state.acceleration.z += Math.sin(time * 0.3 + idHash) * 0.001 * dt;
 
       // Very weak center gravity so they don't fly away forever
       const distToCenter = state.position.length();
