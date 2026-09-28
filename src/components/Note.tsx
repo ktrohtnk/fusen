@@ -119,11 +119,18 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     }
 
     if (isDeleting && meshRef.current) {
-      // サノスエフェクト: 回転しながら縮む
-      meshRef.current.scale.lerp(new THREE.Vector3(0.01, 0.01, 0.01), 0.05);
-      meshRef.current.rotation.z += 0.2;
-      meshRef.current.rotation.x += 0.1;
-      meshRef.current.position.y += 0.02; // 少し上に舞い上がる
+      // サノスエフェクト: 本体は急激に薄くなり、フワッと上へ消える
+      meshRef.current.scale.lerp(new THREE.Vector3(0.8, 0.8, 0.8), 0.05);
+      meshRef.current.position.y += 0.08; 
+      
+      meshRef.current.traverse((child) => {
+        const mesh = child as THREE.Mesh;
+        if (mesh.material) {
+          const mat = mesh.material as THREE.Material;
+          mat.transparent = true;
+          mat.opacity = Math.max(0, mat.opacity - 0.1); // 急激に消える
+        }
+      });
     }
   });
 
@@ -386,12 +393,12 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* サノスエフェクト用パーティクル */}
       {isDeleting && (
         <Sparkles 
-          count={200} 
-          scale={isChild ? [1.5, 1.5, 1.5] : [2.5, 2.5, 2.5]} 
-          size={isChild ? 4 : 6} 
-          speed={4} 
+          count={1500} 
+          scale={isChild ? [3, 3, 3] : [5, 5, 5]} 
+          size={isChild ? 2 : 3} 
+          speed={15} 
           color={user.color} 
-          noise={1} 
+          noise={4} 
         />
       )}
     </group>
