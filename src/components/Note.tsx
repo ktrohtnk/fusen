@@ -179,7 +179,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* クリック判定用の透明な大きなヒットボックス */}
       <mesh position={[0, 0, 0.1]}>
         <planeGeometry args={isChild ? [width * 1.5, height * 1.5] : [3, 3]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        <meshBasicMaterial transparent opacity={0.01} depthWrite={false} />
       </mesh>
 
       {/* グラデーション付きの細いエッジ */}
@@ -283,116 +283,121 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <Html 
           position={
             isChild 
-              ? [0, 0, 0.5] // 衛星の場合：付箋のド真ん中（少し手前）に表示して絶対に見切れさせない
+              ? [0, 0, 0.5] 
               : size.width < 640 
-                ? [0, 0, 1.0] // 恒星かつスマホの場合：ド真ん中に表示
-                : [1.1, 1.1, 0] // 恒星かつPCの場合：右上
+                ? [0, 0, 1.0] 
+                : [1.1, 1.1, 0]
           } 
           center 
           zIndexRange={[100, 0]}
         >
-          <div style={{
-            position: 'relative',
-            background: 'rgba(10, 15, 30, 0.95)',
-            padding: '16px 20px 12px 12px',
-            border: `2px solid ${user.color}`,
-            boxShadow: `4px 4px 0px ${user.color}40`,
-            color: '#e0e0e0',
-            fontSize: '12px',
-            pointerEvents: 'auto',
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            minWidth: '120px',
-            fontFamily: 'inherit'
-          }}>
-            <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
-              {currentUser?.id === note.user_id && (
+          {/* 外枠コンテナ */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+            
+            {/* メインの情報パネル */}
+            <div style={{
+              position: 'relative',
+              background: 'rgba(10, 15, 30, 0.95)',
+              padding: '16px 20px 12px 12px',
+              border: `2px solid ${user.color}`,
+              boxShadow: `4px 4px 0px ${user.color}40`,
+              color: '#e0e0e0',
+              fontSize: '12px',
+              pointerEvents: 'auto',
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              minWidth: '120px',
+              fontFamily: 'inherit'
+            }}>
+              <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
+                {currentUser?.id === note.user_id && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
+                        setIsDeleting(true);
+                        setFocusedNoteId(null);
+                        setTimeout(() => {
+                          useStore.getState().deleteNote(note.id);
+                        }, 1500);
+                      }
+                    }}
+                    style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
+                    title="消滅させる"
+                    onMouseOver={(e) => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = user.color; }}
+                  >
+                    DEL
+                  </button>
+                )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
-                      setIsDeleting(true);
-                      setFocusedNoteId(null);
-                      setTimeout(() => {
-                        useStore.getState().deleteNote(note.id);
-                      }, 1500);
-                    }
+                    setFocusedNoteId(null);
                   }}
-                  style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
-                  title="消滅させる"
-                  onMouseOver={(e) => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = user.color; }}
+                  style={{ background: '#000', border: '2px solid #0ff', cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: '#0ff', fontFamily: 'inherit' }}
+                  title="閉じる"
+                  onMouseOver={(e) => { e.currentTarget.style.background = '#0ff'; e.currentTarget.style.color = '#000'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#0ff'; }}
                 >
-                  DEL
+                  [X] CANCEL FOCUS
                 </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFocusedNoteId(null);
-                }}
-                style={{ background: '#000', border: '2px solid #0ff', cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: '#0ff', fontFamily: 'inherit' }}
-                title="閉じる"
-                onMouseOver={(e) => { e.currentTarget.style.background = '#0ff'; e.currentTarget.style.color = '#000'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#0ff'; }}
-              >
-                [X] CANCEL FOCUS
-              </button>
-            </div>
-
-            <div>
-              <div style={{ fontWeight: 'bold', color: user.color, letterSpacing: '2px', textShadow: `2px 2px 0px ${user.color}40` }}>{user.name}</div>
-              <div style={{ color: '#0ff', fontSize: '10px', margin: '4px 0' }}>
-                {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
               </div>
-            </div>
-            
-            {note.url && (
+
               <div>
-                <a href={note.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
-                  {note.url}
-                </a>
-              </div>
-            )}
-
-            {/* 衛星へのジャンプリンク */}
-            {connections.some(c => c.from_note_id === note.id) && (
-              <div style={{ marginTop: '8px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
-                <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>衛星へジャンプ:</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
-                  {useStore.getState().notes
-                    .filter(n => connections.some(c => c.from_note_id === note.id && c.to_note_id === n.id))
-                    .map(child => (
-                      <button 
-                        key={child.id}
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          setFocusedNoteId(child.id); 
-                        }}
-                        style={{ display: 'block', background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', fontSize: '12px', textAlign: 'left', padding: '2px 0' }}
-                        onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                        onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
-                      >
-                        ↳ {child.text ? (child.text.length > 10 ? child.text.substring(0, 10) + '...' : child.text) : (child.image_url ? '[画像]' : '無題の衛星')}
-                      </button>
-                    ))}
+                <div style={{ fontWeight: 'bold', color: user.color, letterSpacing: '2px', textShadow: `2px 2px 0px ${user.color}40` }}>{user.name}</div>
+                <div style={{ color: '#0ff', fontSize: '10px', margin: '4px 0' }}>
+                  {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
                 </div>
               </div>
-            )}
+              
+              {note.url && (
+                <div>
+                  <a href={note.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
+                    {note.url}
+                  </a>
+                </div>
+              )}
 
-            {/* 衛星をつくるボタン */}
+              {/* 衛星へのジャンプリンク */}
+              {connections.some(c => c.from_note_id === note.id) && (
+                <div style={{ marginTop: '8px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                  <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>衛星へジャンプ:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
+                    {useStore.getState().notes
+                      .filter(n => connections.some(c => c.from_note_id === note.id && c.to_note_id === n.id))
+                      .map(child => (
+                        <button 
+                          key={child.id}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setFocusedNoteId(child.id); 
+                          }}
+                          style={{ display: 'block', background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', fontSize: '12px', textAlign: 'left', padding: '2px 0' }}
+                          onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                          onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                        >
+                          ↳ {child.text ? (child.text.length > 10 ? child.text.substring(0, 10) + '...' : child.text) : (child.image_url ? '[画像]' : '無題の衛星')}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 衛星をつくるボタン（メインパネルの外側） */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 useStore.getState().setIsCreating(true);
               }}
               style={{
-                marginTop: '16px', background: user.color, border: `2px solid ${user.color}`, color: '#000',
-                padding: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                fontSize: '14px', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '1px',
-                boxShadow: `4px 4px 0px ${user.color}60`
+                background: user.color, border: `2px solid ${user.color}`, color: '#000',
+                padding: '12px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '16px', fontWeight: 'bold', fontFamily: 'inherit', letterSpacing: '1px',
+                boxShadow: `4px 4px 0px ${user.color}60`, pointerEvents: 'auto'
               }}
               onMouseOver={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = user.color; }}
               onMouseOut={e => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
