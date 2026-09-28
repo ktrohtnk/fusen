@@ -497,7 +497,7 @@ export const UI = () => {
             ))}
           </div>
           <p style={{ marginTop: '40px', color: '#888', fontSize: '12px', lineHeight: '1.8', letterSpacing: '1px' }}>
-            THIS IS A CLOSED SPACE FUSEN FOR A, B, C, D, E, AND F.<br />
+            THIS IS A CLOSED SPACE FUSEN FOR K, 香, ゆ, J, AND D.<br />
             <span style={{ color: '#aaa' }}>THOUGHTS DRIFT, CONNECT, AND REMAIN FOREVER.</span>
           </p>
         </div>

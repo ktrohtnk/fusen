@@ -10,12 +10,11 @@ export type User = {
 };
 
 export const USERS: User[] = [
-  { id: 'user-a', name: 'A', color: '#ff6b6b' },
-  { id: 'user-b', name: 'B', color: '#4ecdc4' },
-  { id: 'user-c', name: 'C', color: '#ffe66d' },
-  { id: 'user-d', name: 'D', color: '#88d8b0' },
-  { id: 'user-e', name: 'E', color: '#ffb347' },
-  { id: 'user-f', name: 'F', color: '#a084dc' },
+  { id: 'user-a', name: 'K', color: '#ff6b6b' },
+  { id: 'user-b', name: '香', color: '#4ecdc4' },
+  { id: 'user-c', name: 'ゆ', color: '#ffe66d' },
+  { id: 'user-d', name: 'J', color: '#88d8b0' },
+  { id: 'user-e', name: 'D', color: '#ffb347' },
 ];
 
 export type NoteData = {
