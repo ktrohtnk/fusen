@@ -174,6 +174,17 @@ export const Scene = () => {
         dollySpeed={0.5}
         truckSpeed={0.5}
         polarAngle={Math.PI / 2} // start looking somewhat level
+        mouseButtons={{
+          left: 2, // ACTION.TRUCK (pan)
+          right: 1, // ACTION.ROTATE
+          middle: 8, // ACTION.DOLLY
+          wheel: 8, // ACTION.DOLLY
+        }}
+        touches={{
+          one: 2, // ACTION.TOUCH_TRUCK (pan)
+          two: 256 | 8, // ACTION.TOUCH_DOLLY_TRUCK (or similar, 256 is TOUCH_DOLLY_ROTATE often)
+          three: 0
+        }}
       />
 
       {notes.map(note => (
