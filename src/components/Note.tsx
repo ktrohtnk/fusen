@@ -214,9 +214,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             anchorX="center"
             anchorY="middle"
             overflowWrap="break-word"
-            font="https://fonts.gstatic.com/s/notosansjp/v53/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEi75vY0rw-oME.woff"
             sdfGlyphSize={128}
-            fontWeight={700}
           >
             {note.text}
           </Text>

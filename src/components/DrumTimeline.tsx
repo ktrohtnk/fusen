@@ -69,6 +69,7 @@ export const DrumTimeline = () => {
 
   return (
     <div
+      className="ui-content"
       style={{
         position: 'absolute',
         bottom: 24,
