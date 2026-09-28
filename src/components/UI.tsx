@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore, USERS } from '../store';
-import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X } from 'lucide-react';
+import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X, List } from 'lucide-react';
 import { supabase } from '../supabase';
 
 const useIsMobile = () => {
@@ -188,7 +188,7 @@ const SearchPalette = ({ onClose }: { onClose: () => void }) => {
 // ──────────────────────────────────────────
 // ⑤ カレンダービュー
 // ──────────────────────────────────────────
-const CalendarView = ({ onClose }: { onClose: () => void }) => {
+const CalendarView = ({ onClose, onSelectDate }: { onClose: () => void, onSelectDate: (date: string) => void }) => {
   const notes = useStore(s => s.notes);
   const connections = useStore(s => s.connections);
   const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
@@ -267,12 +267,18 @@ const CalendarView = ({ onClose }: { onClose: () => void }) => {
           const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
 
           return (
-            <div key={day} style={{
+            <div key={day} 
+              onClick={() => {
+                onSelectDate(dateKey);
+                onClose();
+              }}
+              style={{
               padding: '4px',
               minHeight: '60px',
               borderRight: '1px solid #111',
               borderBottom: '1px solid #111',
               background: isToday ? 'rgba(0,255,255,0.05)' : 'transparent',
+              cursor: 'pointer',
             }}>
               <div style={{ fontSize: '10px', color: isToday ? '#0ff' : '#555', marginBottom: '4px', textAlign: 'right' }}>{day}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -282,7 +288,7 @@ const CalendarView = ({ onClose }: { onClose: () => void }) => {
                   return (
                     <div
                       key={note.id}
-                      onClick={() => { setFocusedNoteId(note.id); onClose(); }}
+                      onClick={(e) => { e.stopPropagation(); setFocusedNoteId(note.id); onClose(); }}
                       style={{
                         background: u.color,
                         color: '#000',
@@ -312,6 +318,112 @@ const CalendarView = ({ onClose }: { onClose: () => void }) => {
 };
 
 // ──────────────────────────────────────────
+// ⑥ タイムラインビュー
+// ──────────────────────────────────────────
+const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: string | null, onClearFilter: () => void, onClose: () => void }) => {
+  const notes = useStore(s => s.notes);
+  const connections = useStore(s => s.connections);
+  const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
+  const focusedNoteId = useStore(s => s.focusedNoteId);
+  const isMobile = useIsMobile();
+
+  const sortedNotes = [...notes]
+    .filter(n => {
+      if (!dateFilter) return true;
+      const dateKey = new Date(n.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      return dateKey === dateFilter;
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const panelStyle: React.CSSProperties = isMobile ? {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    width: '100%',
+    height: '100%',
+    background: 'rgba(10, 15, 26, 0.95)',
+    zIndex: 90,
+    overflowY: 'auto',
+    padding: '60px 20px 100px 20px',
+  } : {
+    position: 'absolute',
+    top: 80, left: 20, bottom: 20,
+    width: '280px',
+    background: 'transparent',
+    zIndex: 90,
+    overflowY: 'auto',
+    pointerEvents: 'none',
+  };
+
+  return (
+    <div style={panelStyle} className="ui-content custom-scrollbar">
+      {/* フィルターヘッダー & 閉じるボタン */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', pointerEvents: 'auto' }}>
+        {dateFilter ? (
+          <button onClick={onClearFilter} style={{ background: '#0a0f1a', border: '2px solid #ff0', color: '#ff0', padding: '4px 12px', cursor: 'pointer', fontSize: '10px' }}>
+            [ CLEAR FILTER: {dateFilter} ]
+          </button>
+        ) : (
+          <div style={{ color: '#ff0', fontSize: '10px', letterSpacing: '2px', textShadow: '1px 1px 0px #000' }}>[ TIMELINE ]</div>
+        )}
+        
+        {isMobile && (
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#ff0', cursor: 'pointer' }}>
+            <X size={24} />
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'auto' }}>
+        {sortedNotes.length === 0 && (
+          <div style={{ color: '#555', fontSize: '12px' }}>NO SIGNALS YET.</div>
+        )}
+        {sortedNotes.map(note => {
+          const u = USERS.find(u => u.id === note.user_id) || USERS[0];
+          const isChild = connections.some(c => c.to_note_id === note.id);
+          const isFocused = focusedNoteId === note.id;
+
+          return (
+            <div
+              key={note.id}
+              onClick={() => setFocusedNoteId(isFocused ? null : note.id)}
+              style={{
+                background: isFocused ? `${u.color}33` : 'rgba(10, 15, 26, 0.8)',
+                borderLeft: `4px solid ${u.color}`,
+                border: isFocused ? `2px solid ${u.color}` : '2px solid transparent',
+                borderLeftWidth: '4px',
+                padding: '12px',
+                cursor: 'pointer',
+                boxShadow: isFocused ? `4px 4px 0px ${u.color}50` : '4px 4px 0px rgba(0,0,0,0.5)',
+                transition: 'all 0.1s',
+                marginLeft: isChild ? '24px' : '0',
+                position: 'relative',
+              }}
+              onMouseOver={e => e.currentTarget.style.transform = 'translate(-2px, -2px)'}
+              onMouseOut={e => e.currentTarget.style.transform = 'translate(0, 0)'}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: u.color, fontWeight: 'bold', fontSize: '12px', letterSpacing: '1px', textShadow: `0 0 4px ${u.color}` }}>
+                  {isChild ? '↳ ' : ''}{u.name}
+                </span>
+                <span style={{ color: '#666', fontSize: '10px' }}>
+                  {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <div style={{ color: '#fff', fontSize: '14px', lineHeight: '1.4', overflowWrap: 'break-word', letterSpacing: '0.5px' }}>
+                {note.text}
+              </div>
+              {note.image_url && (
+                <div style={{ marginTop: '8px', border: `2px solid ${u.color}`, height: '80px', backgroundImage: `url(${note.image_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ──────────────────────────────────────────
 // メインUI
 // ──────────────────────────────────────────
 export const UI = () => {
@@ -326,6 +438,17 @@ export const UI = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showMinimap, setShowMinimap] = useState(true);
   const isMobile = useIsMobile();
+  const [showTimeline, setShowTimeline] = useState(!isMobile);
+  const [timelineDate, setTimelineDate] = useState<string | null>(null);
+
+  // モバイル切り替え時にタイムラインの初期表示を切り替える
+  useEffect(() => {
+    if (isMobile) {
+      setShowTimeline(false);
+    } else {
+      setShowTimeline(true);
+    }
+  }, [isMobile]);
 
   // キーボードショートカット (Space or Cmd+K で検索)
   useEffect(() => {
@@ -425,6 +548,15 @@ export const UI = () => {
           <CalendarDays size={16} />
         </button>
         <button
+          onClick={() => setShowTimeline(v => !v)}
+          title="Timeline"
+          style={{ background: showTimeline ? '#ff0' : '#0a0f1a', border: '2px solid #ff0', color: showTimeline ? '#000' : '#ff0', padding: '8px', cursor: 'pointer' }}
+          onMouseOver={e => { e.currentTarget.style.background = '#ff0'; e.currentTarget.style.color = '#000'; }}
+          onMouseOut={e => { if (!showTimeline) { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = '#ff0'; } }}
+        >
+          <List size={16} />
+        </button>
+        <button
           onClick={() => setShowMinimap(v => !v)}
           title="Minimap"
           style={{ background: showMinimap ? '#fff' : '#0a0f1a', border: '2px solid #fff', color: showMinimap ? '#000' : '#fff', padding: '8px', cursor: 'pointer' }}
@@ -453,7 +585,24 @@ export const UI = () => {
       {showSearch && <SearchPalette onClose={() => setShowSearch(false)} />}
 
       {/* ⑤ カレンダービュー */}
-      {showCalendar && <CalendarView onClose={() => setShowCalendar(false)} />}
+      {showCalendar && (
+        <CalendarView 
+          onClose={() => setShowCalendar(false)} 
+          onSelectDate={(dateStr) => {
+            setTimelineDate(dateStr);
+            setShowTimeline(true);
+          }}
+        />
+      )}
+
+      {/* ⑥ タイムラインビュー */}
+      {showTimeline && (
+        <TimelineView 
+          dateFilter={timelineDate} 
+          onClearFilter={() => setTimelineDate(null)}
+          onClose={() => setShowTimeline(false)}
+        />
+      )}
 
       {/* FAB */}
       {!isCreating && (
