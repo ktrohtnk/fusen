@@ -202,13 +202,26 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         />
       )}
 
-      {note.text && (
-        <>
+      {note.text && (() => {
+        const textLen = note.text.length;
+        
+        let dFontSize = isChild ? 0.13 : 0.17;
+        let dMaxWidth = isChild ? width * 0.75 : 1.2;
+
+        if (textLen > 60) {
+          dFontSize = isChild ? 0.08 : 0.11;
+          dMaxWidth = isChild ? width * 0.85 : 1.6;
+        } else if (textLen > 30) {
+          dFontSize = isChild ? 0.10 : 0.14;
+          dMaxWidth = isChild ? width * 0.8 : 1.4;
+        }
+
+        return (
           <Text
             position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
             color={isChild ? '#1a1a1a' : '#ffffff'}
-            fontSize={isChild ? 0.13 : 0.17}
-            maxWidth={isChild ? width * 0.85 : 1.4}
+            fontSize={dFontSize}
+            maxWidth={dMaxWidth}
             lineHeight={1.3}
             textAlign="center"
             anchorX="center"
@@ -218,8 +231,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           >
             {note.text}
           </Text>
-        </>
-      )}
+        );
+      })()}
 
       {/* 日付と時間の表示 */}
       <Text
