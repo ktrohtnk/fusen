@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStore, USERS } from '../store';
-import { Send, Plus, Link as LinkIcon, X } from 'lucide-react';
+import { Send, Plus, Link as LinkIcon, X, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '../supabase';
 
 export const UI = () => {
   const { currentUser, setCurrentUser, addNote, focusedNoteId, setFocusedNoteId } = useStore();
   const [isCreating, setIsCreating] = useState(false);
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   if (!currentUser) {
     return (
@@ -44,15 +48,30 @@ export const UI = () => {
     );
   }
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() && !selectedImage) return;
     
+    setIsUploading(true);
+    let imageUrl = '';
+
+    if (selectedImage && supabase) {
+      const fileExt = selectedImage.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const { error } = await supabase.storage.from('images').upload(fileName, selectedImage);
+      if (!error) {
+        const { data } = supabase.storage.from('images').getPublicUrl(fileName);
+        imageUrl = data.publicUrl;
+      }
+    }
+
     // If we have a focused note, this new note attaches to it
-    addNote(text, url, focusedNoteId || undefined);
+    addNote(text, url, focusedNoteId || undefined, imageUrl || undefined);
     
     setText('');
     setUrl('');
+    setSelectedImage(null);
+    setIsUploading(false);
     setIsCreating(false);
   };
 
@@ -115,7 +134,10 @@ export const UI = () => {
               {focusedNoteId ? 'Attach a thought' : 'Drop a thought'}
             </div>
             <button 
-              onClick={() => setIsCreating(false)}
+              onClick={() => {
+                setIsCreating(false);
+                setSelectedImage(null);
+              }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999' }}
             >
               <X size={20} />
@@ -153,26 +175,64 @@ export const UI = () => {
                 fontSize: '14px'
               }}
             />
-            <button
-              type="submit"
-              disabled={!text.trim()}
-              style={{
-                background: '#333',
-                color: 'white',
-                border: 'none',
-                padding: '12px',
-                borderRadius: '8px',
-                cursor: text.trim() ? 'pointer' : 'not-allowed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                opacity: text.trim() ? 1 : 0.5
+            <input 
+              type="file" 
+              accept="image/*" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setSelectedImage(e.target.files[0]);
+                }
               }}
-            >
-              <Send size={18} />
-              {focusedNoteId ? 'Attach' : 'Drop'}
-            </button>
+            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  background: selectedImage ? currentUser.color : '#f0f0f0',
+                  border: '1px solid #ddd',
+                  padding: '8px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flex: 1,
+                  color: '#333'
+                }}
+              >
+                <ImageIcon size={18} style={{ marginRight: '4px' }} />
+                {selectedImage ? 'Image Selected' : 'Add Image'}
+              </button>
+              
+              <button
+                type="submit"
+                disabled={(!text.trim() && !selectedImage) || isUploading}
+                style={{
+                  background: '#333',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  cursor: (!text.trim() && !selectedImage) || isUploading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  flex: 2,
+                  opacity: (!text.trim() && !selectedImage) || isUploading ? 0.5 : 1
+                }}
+              >
+                {isUploading ? 'Uploading...' : (
+                  <>
+                    <Send size={18} />
+                    {focusedNoteId ? 'Attach' : 'Drop'}
+                  </>
+                )}
+              </button>
+            </div>
           </form>
         </div>
       )}

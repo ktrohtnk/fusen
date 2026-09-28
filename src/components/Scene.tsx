@@ -59,18 +59,31 @@ export const Scene = () => {
       }
     }
 
-    // Attraction between connected notes (like stacked papers)
+    // Orbit attraction for connected notes (child orbits parent)
     connections.forEach(conn => {
-      const stateFrom = physicsState.current[conn.from_note_id];
-      const stateTo = physicsState.current[conn.to_note_id];
+      const stateFrom = physicsState.current[conn.from_note_id]; // Parent
+      const stateTo = physicsState.current[conn.to_note_id];     // Child
       if (stateFrom && stateTo) {
         const diff = new THREE.Vector3().subVectors(stateTo.position, stateFrom.position);
         const dist = diff.length();
-        // Target distance is very small (e.g., 0.2) to make them look overlapping
-        if (dist > 0.2) {
-          const force = diff.normalize().multiplyScalar((dist - 0.2) * 2.0 * dt);
-          if (!stateFrom.isDragging) stateFrom.acceleration.add(force);
-          if (!stateTo.isDragging) stateTo.acceleration.sub(force);
+        
+        // 1. Radial spring (pull to orbit radius of ~2.5)
+        const targetDist = 2.5;
+        if (dist > 0.1) {
+          const radialForce = diff.clone().normalize().multiplyScalar((targetDist - dist) * 1.5 * dt);
+          if (!stateTo.isDragging) stateTo.acceleration.add(radialForce);
+          // Parent doesn't get pulled as much by satellite
+          if (!stateFrom.isDragging) stateFrom.acceleration.sub(radialForce.multiplyScalar(0.1));
+        }
+
+        // 2. Tangential force (orbiting motion)
+        const up = new THREE.Vector3(0, 1, 0);
+        let tangent = new THREE.Vector3().crossVectors(diff, up).normalize();
+        if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); // fallback if diff is exactly UP
+        
+        // Push child along the tangent to create orbit
+        if (!stateTo.isDragging) {
+          stateTo.acceleration.add(tangent.multiplyScalar(1.0 * dt));
         }
       }
     });

@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Text, Html } from '@react-three/drei';
+import { Text, Html, Image as DreiImage } from '@react-three/drei';
 import * as THREE from 'three';
 import { NoteData, useStore, USERS } from '../store';
 import { useDrag } from '@use-gesture/react';
@@ -23,11 +23,15 @@ export const Note = ({ note, physicsState }: NoteProps) => {
   const setFocusedNoteId = useStore((state) => state.setFocusedNoteId);
   const focusedNoteId = useStore((state) => state.focusedNoteId);
   const syncNotePosition = useStore((state) => state.syncNotePosition);
+  const connections = useStore((state) => state.connections);
   
   const user = USERS.find(u => u.id === note.user_id) || USERS[0];
   const isFocused = focusedNoteId === note.id;
 
-  // Initialize physics state for this note if not exists
+  // Determine if this is a child note (attached to something)
+  const isChild = useMemo(() => connections.some(c => c.to_note_id === note.id), [connections, note.id]);
+  const radius = isChild ? 0.6 : 1.2;
+
   if (!physicsState.current[note.id]) {
     physicsState.current[note.id] = {
       position: note.position.clone(),
@@ -39,14 +43,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     };
   }
 
-  // Update mesh position/rotation from physics state every frame
   useFrame(() => {
     if (meshRef.current && physicsState.current[note.id]) {
       const state = physicsState.current[note.id];
       meshRef.current.position.copy(state.position);
       meshRef.current.rotation.copy(state.rotation);
-      
-      // Look at camera gently if not dragging? No, prompt says they drift and rotate.
     }
   });
 
@@ -59,27 +60,18 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     state.isDragging = active;
 
     if (active) {
-      // While dragging, map 2d mouse movement to 3d velocity/position
-      // Simple approximation: move parallel to view plane
       const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
       const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
       
-      // Calculate delta position based on screen movement
-      const moveX = mx * 0.01;
-      const moveY = -my * 0.01;
-      
-      // Update velocity directly to allow throwing (inertia)
       state.velocity.add(right.multiplyScalar(dx * vx * 0.005));
       state.velocity.add(up.multiplyScalar(-dy * vy * 0.005));
     } else {
-      // On release, sync to DB
       syncNotePosition(note.id, state.position, state.rotation);
     }
   }, { pointerEvents: true });
 
-  // Calculate age for opacity/brightness
   const age = (Date.now() - new Date(note.created_at).getTime()) / 1000;
-  const isNew = age < 60; // Less than a minute
+  const isNew = age < 60; 
 
   return (
     <group 
@@ -90,9 +82,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         setFocusedNoteId(isFocused ? null : note.id);
       }}
     >
-      {/* The paper piece */}
       <mesh receiveShadow castShadow>
-        <planeGeometry args={[2, 1.5]} />
+        <circleGeometry args={[radius, 64]} />
         <meshStandardMaterial 
           color={user.color} 
           roughness={0.8}
@@ -103,52 +94,63 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         />
       </mesh>
 
-      {/* Text Content */}
-      <Text
-        position={[0, 0, 0.02]}
-        color="#333333"
-        fontSize={0.15}
-        maxWidth={1.8}
-        textAlign="left"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {note.text}
-      </Text>
-      
-      <Text
-        position={[0, 0, -0.02]}
-        rotation={[0, Math.PI, 0]}
-        color="#333333"
-        fontSize={0.15}
-        maxWidth={1.8}
-        textAlign="left"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {note.text}
-      </Text>
+      {note.image_url && (
+        <DreiImage 
+          url={note.image_url} 
+          position={[0, note.text ? 0.3 : 0, 0.01]} 
+          scale={radius * 1.2} 
+          transparent 
+          opacity={0.9} 
+        />
+      )}
 
-      {/* Meta info visible when focused */}
+      {note.text && (
+        <>
+          <Text
+            position={[0, note.image_url ? -0.4 : 0, 0.02]}
+            color="#333333"
+            fontSize={isChild ? 0.12 : 0.15}
+            maxWidth={radius * 1.5}
+            textAlign="center"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {note.text}
+          </Text>
+          <Text
+            position={[0, note.image_url ? -0.4 : 0, -0.02]}
+            rotation={[0, Math.PI, 0]}
+            color="#333333"
+            fontSize={isChild ? 0.12 : 0.15}
+            maxWidth={radius * 1.5}
+            textAlign="center"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {note.text}
+          </Text>
+        </>
+      )}
+
       {isFocused && (
-        <Html position={[1.1, -0.8, 0]} center>
+        <Html position={[radius + 0.2, -radius + 0.2, 0]} center zIndexRange={[100, 0]}>
           <div style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            padding: '8px 12px',
-            borderRadius: '4px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            padding: '12px',
+            borderRadius: '12px',
             fontSize: '12px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            pointerEvents: 'none',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            pointerEvents: 'auto',
             whiteSpace: 'nowrap',
             borderLeft: `4px solid ${user.color}`
           }}>
-            <div>{user.name}</div>
-            <div style={{ color: '#666', fontSize: '10px' }}>
+            <div style={{ fontWeight: 'bold' }}>{user.name}</div>
+            <div style={{ color: '#666', fontSize: '10px', margin: '4px 0' }}>
               {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
             </div>
             {note.url && (
-              <div style={{ marginTop: '4px' }}>
-                <a href={note.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', pointerEvents: 'auto' }}>
+              <div style={{ marginTop: '8px' }}>
+                <a href={note.url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
                   {note.url}
                 </a>
               </div>

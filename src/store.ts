@@ -20,6 +20,7 @@ export type NoteData = {
   user_id: string;
   text: string;
   url: string | null;
+  image_url: string | null;
   created_at: string;
   position: THREE.Vector3;
   velocity: THREE.Vector3;
@@ -41,7 +42,7 @@ interface AppState {
   connections: ConnectionData[];
   focusedNoteId: string | null;
   setFocusedNoteId: (id: string | null) => void;
-  addNote: (text: string, url?: string, parentId?: string) => void;
+  addNote: (text: string, url?: string, parentId?: string, image_url?: string) => void;
   updateNotePhysics: (id: string, position: THREE.Vector3, velocity: THREE.Vector3, rotation: THREE.Euler, angularVelocity: THREE.Euler) => void;
   syncNotePosition: (id: string, position: THREE.Vector3, rotation: THREE.Euler) => void;
   fetchInitialData: () => Promise<void>;
@@ -55,7 +56,7 @@ export const useStore = create<AppState>((set, get) => ({
   focusedNoteId: null,
   setFocusedNoteId: (id) => set({ focusedNoteId: id }),
 
-  addNote: async (text, url, parentId) => {
+  addNote: async (text, url, parentId, image_url) => {
     const { currentUser, notes, focusedNoteId } = get();
     if (!currentUser) return;
 
@@ -76,12 +77,13 @@ export const useStore = create<AppState>((set, get) => ({
       user_id: currentUser.id,
       text,
       url: url || null,
+      image_url: image_url || null,
       created_at: new Date().toISOString(),
       position: startPos,
       velocity: new THREE.Vector3((Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02),
       acceleration: new THREE.Vector3(0, 0, 0),
-      rotation: new THREE.Euler(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI),
-      angularVelocity: new THREE.Euler((Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01, (Math.random() - 0.5) * 0.01)
+      rotation: new THREE.Euler(0, Math.random() * Math.PI, 0),
+      angularVelocity: new THREE.Euler(0, (Math.random() - 0.5) * 0.01, 0)
     };
 
     set((state) => ({ notes: [...state.notes, newNote] }));
@@ -99,11 +101,12 @@ export const useStore = create<AppState>((set, get) => ({
     // Save to Supabase (if configured)
     if (supabase) {
       try {
-        await supabase.from('notes').insert({
+        const { error: noteError } = await supabase.from('notes').insert({
           id: newNote.id,
           user_id: newNote.user_id,
           text: newNote.text,
           url: newNote.url,
+          image_url: newNote.image_url,
           created_at: newNote.created_at,
           x: newNote.position.x,
           y: newNote.position.y,
@@ -112,13 +115,16 @@ export const useStore = create<AppState>((set, get) => ({
           rotation_y: newNote.rotation.y,
           rotation_z: newNote.rotation.z,
         });
+        
+        if (noteError) console.error("Note insert error:", noteError);
 
         if (newConn) {
-          await supabase.from('connections').insert({
+          const { error: connError } = await supabase.from('connections').insert({
             id: newConn.id,
             from_note_id: newConn.from_note_id,
             to_note_id: newConn.to_note_id
           });
+          if (connError) console.error("Connection insert error:", connError);
         }
       } catch (e) {
         console.error("Failed to save to supabase", e);
@@ -154,8 +160,11 @@ export const useStore = create<AppState>((set, get) => ({
   fetchInitialData: async () => {
     if (!supabase) return;
     try {
-      const { data: notesData } = await supabase.from('notes').select('*');
-      const { data: connData } = await supabase.from('connections').select('*');
+      const { data: notesData, error: notesError } = await supabase.from('notes').select('*');
+      const { data: connData, error: connError } = await supabase.from('connections').select('*');
+      
+      if (notesError) console.error("Fetch notes error:", notesError);
+      if (connError) console.error("Fetch connections error:", connError);
 
       if (notesData) {
         const loadedNotes = notesData.map(n => ({
@@ -163,6 +172,7 @@ export const useStore = create<AppState>((set, get) => ({
           user_id: n.user_id,
           text: n.text,
           url: n.url,
+          image_url: n.image_url,
           created_at: n.created_at,
           position: new THREE.Vector3(n.x, n.y, n.z),
           velocity: new THREE.Vector3(0, 0, 0),
