@@ -119,16 +119,12 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     }
 
     if (isDeleting && meshRef.current) {
-      // サノスエフェクト: 本体は急激に薄くなり、フワッと上へ消える
-      meshRef.current.scale.lerp(new THREE.Vector3(0.8, 0.8, 0.8), 0.05);
+      // サノスエフェクト: 本体は一瞬で消滅し、パーティクルだけが残って風に舞う
       meshRef.current.position.y += 0.08; 
       
       meshRef.current.traverse((child) => {
-        const mesh = child as THREE.Mesh;
-        if (mesh.material) {
-          const mat = mesh.material as THREE.Material;
-          mat.transparent = true;
-          mat.opacity = Math.max(0, mat.opacity - 0.1); // 急激に消える
+        if ((child as any).isMesh) {
+          child.visible = false;
         }
       });
     }
@@ -165,7 +161,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         setFocusedNoteId(isFocused ? null : note.id);
       }}
     >
-      <mesh receiveShadow castShadow>
+      <group visible={!isDeleting}>
+        <mesh receiveShadow castShadow>
         {isChild ? (
           <planeGeometry args={[width, height]} />
         ) : (
@@ -406,6 +403,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           </button>
         </Html>
       )}
+      </group>
 
       {/* サノスエフェクト用パーティクル */}
       {isDeleting && (
