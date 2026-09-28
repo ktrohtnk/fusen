@@ -85,9 +85,9 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2;
       const material = glowRef.current.material as THREE.MeshBasicMaterial;
       
-      const intensity = 2.0 + pulse * 2.0;
+      const intensity = 1.2 + pulse * 0.8;
       material.color.copy(displayColor).multiplyScalar(intensity);
-      material.opacity = 1.0;
+      material.opacity = 0.9;
     }
   });
 

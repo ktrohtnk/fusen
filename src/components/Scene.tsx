@@ -162,7 +162,7 @@ export const Scene = () => {
       ))}
 
       <EffectComposer disableNormalPass>
-        <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={2.0} />
+        <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={1.0} />
       </EffectComposer>
     </>
   );
