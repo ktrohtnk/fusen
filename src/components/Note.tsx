@@ -30,7 +30,16 @@ export const Note = ({ note, physicsState }: NoteProps) => {
 
   // Determine if this is a child note (attached to something)
   const isChild = useMemo(() => connections.some(c => c.to_note_id === note.id), [connections, note.id]);
-  const radius = isChild ? 0.6 : 1.2;
+  
+  // サイズ（恒星は大きく、衛星は小さく四角く）
+  const width = isChild ? 1.0 : 2.0;
+  const height = isChild ? 0.8 : 1.5;
+
+  // 色の違い（衛星は同一色相で少し暗く/濃くする）
+  const baseColor = useMemo(() => new THREE.Color(user.color), [user.color]);
+  const displayColor = useMemo(() => {
+    return isChild ? baseColor.clone().multiplyScalar(0.8) : baseColor;
+  }, [baseColor, isChild]);
 
   if (!physicsState.current[note.id]) {
     physicsState.current[note.id] = {
@@ -85,11 +94,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       }}
     >
       <mesh receiveShadow castShadow>
-        <circleGeometry args={[radius, 64]} />
+        <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color={user.color} 
+          color={displayColor} 
           roughness={0.8}
-          emissive={isNew ? new THREE.Color(user.color).multiplyScalar(0.5) : "#000000"}
+          emissive={isNew ? displayColor.clone().multiplyScalar(0.5) : "#000000"}
           transparent
           opacity={0.95}
           side={THREE.DoubleSide}
@@ -100,7 +109,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <DreiImage 
           url={note.image_url} 
           position={[0, note.text ? 0.3 : 0, 0.01]} 
-          scale={radius * 1.2} 
+          scale={[width * 0.8, height * 0.5]} 
           transparent 
           opacity={0.9} 
         />
@@ -109,22 +118,10 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {note.text && (
         <>
           <Text
-            position={[0, note.image_url ? -0.4 : 0, 0.02]}
+            position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
             color="#333333"
-            fontSize={isChild ? 0.12 : 0.15}
-            maxWidth={radius * 1.5}
-            textAlign="center"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {note.text}
-          </Text>
-          <Text
-            position={[0, note.image_url ? -0.4 : 0, -0.02]}
-            rotation={[0, Math.PI, 0]}
-            color="#333333"
-            fontSize={isChild ? 0.12 : 0.15}
-            maxWidth={radius * 1.5}
+            fontSize={isChild ? 0.1 : 0.15}
+            maxWidth={width * 0.8}
             textAlign="center"
             anchorX="center"
             anchorY="middle"
@@ -135,7 +132,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       )}
 
       {isFocused && (
-        <Html position={[radius + 0.2, -radius + 0.2, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[width / 2 + 0.2, -height / 2 + 0.2, 0]} center zIndexRange={[100, 0]}>
           <div style={{
             background: 'rgba(255, 255, 255, 0.95)',
             padding: '12px',
