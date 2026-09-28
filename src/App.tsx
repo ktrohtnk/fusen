@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import { Scene } from './components/Scene';
 import { UI } from './components/UI';
 import { useStore } from './store';
+import { supabase } from './supabase';
 
 function App() {
   const fetchInitialData = useStore(state => state.fetchInitialData);
@@ -10,22 +11,23 @@ function App() {
   useEffect(() => {
     fetchInitialData();
     
-    // リアルタイムサブスクリプションを追加
-    import('./supabase').then(({ supabase }) => {
-      if (!supabase) return;
-      const channel = supabase.channel('public:notes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => {
-          fetchInitialData(); // 誰かが星を作ったり消したりしたら即座に再取得
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'connections' }, () => {
-          fetchInitialData();
-        })
-        .subscribe();
-        
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    });
+    // リアルタイムサブスクリプション
+    if (!supabase) return;
+    // @ts-ignore
+    const channel = supabase.channel('public:notes')
+      // @ts-ignore
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => {
+        fetchInitialData();
+      })
+      // @ts-ignore
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'connections' }, () => {
+        fetchInitialData();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchInitialData]);
 
   return (
