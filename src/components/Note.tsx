@@ -112,7 +112,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2;
       const material = glowRef.current.material as THREE.MeshBasicMaterial;
       
-      const intensity = 1.2 + pulse * 0.8;
+      const intensity = 1.5 + pulse * 1.0;
       material.color.copy(displayColor).multiplyScalar(intensity);
       material.opacity = 0.9;
     }
@@ -167,10 +167,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           color={displayColor}
           roughness={0.8}
           emissive={user.color}
-          emissiveIntensity={isChild ? 0.2 : 0.1}
+          emissiveIntensity={isChild ? 0.3 : 0.5}
           transparent
           opacity={isChild ? 0.75 : 0.65}
           side={THREE.DoubleSide}
+          toneMapped={false}
         />
       </mesh>
 
