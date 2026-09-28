@@ -17,20 +17,17 @@ export const UI = () => {
 
   if (!currentUser) {
     return (
-      <div className="ui-layer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at center, #1a1f2e 0%, #0a0f1a 100%)' }}>
+      <div className="ui-layer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%231a1f2e\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'2\' cy=\'2\' r=\'2\'/%3E%3C/g%3E%3C/svg%3E"), #0a0f1a' }}>
         <div className="ui-content" style={{ 
-          background: 'rgba(10, 15, 30, 0.7)', 
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 0 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05)',
-          padding: '60px', 
-          borderRadius: '4px', 
+          background: '#0a0f1a', 
+          border: '4px solid #fff',
+          boxShadow: '8px 8px 0px rgba(0,255,255,0.5)',
+          padding: '40px', 
           textAlign: 'center', 
           maxWidth: '500px',
           color: '#fff',
-          fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
         }}>
-          <h1 style={{ margin: '0 0 32px 0', fontSize: '28px', fontWeight: 'bold', letterSpacing: '4px', color: '#fff' }}>SYSTEM LOGIN</h1>
+          <h1 style={{ margin: '0 0 32px 0', fontSize: '24px', letterSpacing: '4px', color: '#0ff', textShadow: '2px 2px 0px #f0f' }}>SYSTEM LOGIN</h1>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {USERS.map(u => (
               <button
@@ -39,25 +36,26 @@ export const UI = () => {
                 style={{
                   width: '64px',
                   height: '64px',
-                  borderRadius: '50%',
-                  border: `2px solid ${u.color}50`,
-                  background: 'rgba(0,0,0,0.5)',
-                  fontSize: '20px',
+                  border: `4px solid ${u.color}`,
+                  background: '#000',
+                  fontSize: '24px',
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   color: u.color,
-                  boxShadow: `0 0 15px ${u.color}20`,
-                  transition: 'all 0.3s',
+                  boxShadow: `4px 4px 0px ${u.color}50`,
+                  transition: 'none',
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = `${u.color}20`;
-                  e.currentTarget.style.boxShadow = `0 0 30px ${u.color}60`;
-                  e.currentTarget.style.borderColor = u.color;
+                  e.currentTarget.style.background = u.color;
+                  e.currentTarget.style.color = '#000';
+                  e.currentTarget.style.transform = 'translate(2px, 2px)';
+                  e.currentTarget.style.boxShadow = `2px 2px 0px ${u.color}50`;
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'rgba(0,0,0,0.5)';
-                  e.currentTarget.style.boxShadow = `0 0 15px ${u.color}20`;
-                  e.currentTarget.style.borderColor = `${u.color}50`;
+                  e.currentTarget.style.background = '#000';
+                  e.currentTarget.style.color = u.color;
+                  e.currentTarget.style.transform = 'translate(0px, 0px)';
+                  e.currentTarget.style.boxShadow = `4px 4px 0px ${u.color}50`;
                 }}
               >
                 {u.name}
@@ -123,24 +121,29 @@ export const UI = () => {
             position: 'absolute',
             top: 70,
             left: 20,
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'white',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: '#0a0f1a',
+            color: '#0ff',
+            border: '2px solid #0ff',
+            boxShadow: '4px 4px 0px rgba(0,255,255,0.5)',
             padding: '8px 16px',
-            borderRadius: '20px',
             cursor: 'pointer',
-            backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            fontSize: '14px',
-            transition: 'background 0.2s',
+            fontSize: '12px',
+            textTransform: 'uppercase',
             zIndex: 10
           }}
-          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = '#0ff';
+            e.currentTarget.style.color = '#000';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = '#0a0f1a';
+            e.currentTarget.style.color = '#0ff';
+          }}
         >
-          ← 宇宙空間に戻る (フォーカス解除)
+          ← CANCEL FOCUS
         </button>
       )}
 
@@ -149,18 +152,18 @@ export const UI = () => {
         className="ui-content"
         style={{ 
           position: 'absolute', 
-          top: focusedNoteId ? 120 : 80, // 戻るボタンがある時は少し下げる
+          top: focusedNoteId ? 120 : 80, 
           left: 20, 
           bottom: 40,
           width: '240px',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '12px',
           paddingRight: '10px'
         }}
       >
-        <div style={{ color: '#fff', opacity: 0.5, fontSize: '12px', marginBottom: '8px' }}>TIMELINE</div>
+        <div style={{ color: '#0ff', fontSize: '14px', marginBottom: '8px', textShadow: '2px 2px 0px #f0f' }}>[ TIMELINE ]</div>
         {timelineNotes.map(note => {
           const u = USERS.find(u => u.id === note.user_id) || USERS[0];
           const isChild = connections.some(c => c.to_note_id === note.id);
@@ -170,47 +173,36 @@ export const UI = () => {
               key={note.id}
               onClick={() => setFocusedNoteId(note.id)}
               style={{
-                background: focusedNoteId === note.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
+                background: focusedNoteId === note.id ? u.color : '#0a0f1a',
+                color: focusedNoteId === note.id ? '#000' : '#fff',
                 padding: '12px',
-                borderRadius: '8px',
                 cursor: 'pointer',
-                borderLeft: `4px solid ${u.color}`,
-                boxShadow: !isChild ? `-4px 0 16px ${u.color}40` : 'none',
+                border: `2px solid ${u.color}`,
+                boxShadow: `4px 4px 0px ${u.color}50`,
                 marginLeft: isChild ? '24px' : '0px',
                 opacity: isChild ? 0.85 : 1,
-                transition: 'background 0.2s',
               }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === note.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
+              onMouseOver={(e) => {
+                if (focusedNoteId !== note.id) {
+                  e.currentTarget.style.background = `${u.color}33`;
+                }
+              }}
+              onMouseOut={(e) => {
+                if (focusedNoteId !== note.id) {
+                  e.currentTarget.style.background = '#0a0f1a';
+                }
+              }}
             >
-              <div style={{ color: '#aaa', fontSize: '12px', fontWeight: '500', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ 
-                  color: isChild ? '#888' : '#fff',
-                  textShadow: isChild ? 'none' : `0 0 6px ${u.color}, 0 0 12px ${u.color}`
-                }}>
-                  {isChild ? '↳ 衛星 ' : '● 恒星 '}
-                  <span style={{ color: isChild ? '#888' : '#ccc', textShadow: 'none', marginLeft: '4px' }}>
-                    {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <div style={{ color: focusedNoteId === note.id ? '#000' : '#aaa', fontSize: '10px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>
+                  {isChild ? '↳ SAT ' : '● STAR '}
+                  <span style={{ marginLeft: '4px' }}>
+                    {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm(isChild ? 'この衛星（付箋）を消滅させますか？' : 'この恒星（と思考の繋がりすべて）を完全に消滅させますか？')) {
-                      useStore.getState().deleteNote(note.id);
-                    }
-                  }}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', opacity: 0.5, padding: 0
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-                  onMouseOut={(e) => e.currentTarget.style.opacity = '0.5'}
-                >
-                  💥
-                </button>
               </div>
-              <div style={{ color: '#fff', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.4' }}>
-                {note.text || (note.image_url ? '[画像]' : (isChild ? '無題の衛星' : '無題の恒星'))}
+              <div style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {note.text || (note.image_url ? '[IMAGE]' : (isChild ? 'NO_DATA' : 'NO_DATA'))}
               </div>
             </div>
           );
@@ -226,30 +218,31 @@ export const UI = () => {
             position: 'absolute',
             bottom: 40,
             right: 40,
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            background: 'rgba(10, 15, 30, 0.6)',
-            backdropFilter: 'blur(10px)',
-            border: `1px solid ${currentUser.color}50`,
-            boxShadow: `0 0 20px ${currentUser.color}30`,
+            width: '64px',
+            height: '64px',
+            background: '#0a0f1a',
+            border: `4px solid ${currentUser.color}`,
+            boxShadow: `6px 6px 0px ${currentUser.color}50`,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             color: currentUser.color,
-            transition: 'all 0.3s'
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(10, 15, 30, 0.9)';
-            e.currentTarget.style.boxShadow = `0 0 30px ${currentUser.color}60`;
+            e.currentTarget.style.background = currentUser.color;
+            e.currentTarget.style.color = '#000';
+            e.currentTarget.style.transform = 'translate(2px, 2px)';
+            e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`;
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = 'rgba(10, 15, 30, 0.6)';
-            e.currentTarget.style.boxShadow = `0 0 20px ${currentUser.color}30`;
+            e.currentTarget.style.background = '#0a0f1a';
+            e.currentTarget.style.color = currentUser.color;
+            e.currentTarget.style.transform = 'translate(0px, 0px)';
+            e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`;
           }}
         >
-          {focusedNoteId ? <LinkIcon size={24} /> : <Plus size={24} />}
+          {focusedNoteId ? <LinkIcon size={28} /> : <Plus size={28} />}
         </button>
       )}
 
@@ -260,18 +253,15 @@ export const UI = () => {
           bottom: 40,
           right: 40,
           width: '320px',
-          background: 'rgba(10, 15, 30, 0.85)',
-          backdropFilter: 'blur(12px)',
-          borderRadius: '8px',
+          background: '#0a0f1a',
           padding: '20px',
-          boxShadow: `0 10px 40px rgba(0,0,0,0.5), inset 0 0 15px ${currentUser.color}20`,
-          border: `1px solid ${currentUser.color}40`,
-          borderTop: `4px solid ${currentUser.color}`,
+          boxShadow: `8px 8px 0px ${currentUser.color}50`,
+          border: `4px solid ${currentUser.color}`,
           color: '#e0e0e0',
-          fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
+          fontFamily: 'inherit'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ fontWeight: 'bold', color: currentUser.color, letterSpacing: '1px' }}>
+            <div style={{ fontWeight: 'bold', color: currentUser.color, letterSpacing: '2px', textShadow: '2px 2px 0px #000' }}>
               {focusedNoteId ? 'ATTACH SIGNAL' : 'DROP SIGNAL'}
             </div>
             <button 
@@ -279,9 +269,9 @@ export const UI = () => {
                 setIsCreating(false);
                 setSelectedImage(null);
               }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0ff', fontSize: '16px' }}
             >
-              <X size={20} />
+              [X]
             </button>
           </div>
           
@@ -295,13 +285,12 @@ export const UI = () => {
                 width: '100%',
                 minHeight: '100px',
                 padding: '12px',
-                borderRadius: '4px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(0,0,0,0.4)',
+                border: `2px solid ${currentUser.color}`,
+                background: '#000',
                 color: '#fff',
                 resize: 'none',
                 fontFamily: 'inherit',
-                fontSize: '14px'
+                fontSize: '12px'
               }}
             />
             <input
@@ -312,12 +301,11 @@ export const UI = () => {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                borderRadius: '4px',
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'rgba(0,0,0,0.4)',
+                border: `2px solid ${currentUser.color}`,
+                background: '#000',
                 color: '#fff',
                 fontFamily: 'inherit',
-                fontSize: '14px'
+                fontSize: '12px'
               }}
             />
             <input 

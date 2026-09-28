@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useStore } from '../store';
@@ -163,6 +163,7 @@ export const Scene = () => {
       ))}
 
       <EffectComposer disableNormalPass>
+        <Pixelation granularity={4} />
         <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} height={300} intensity={1.0} />
       </EffectComposer>
     </>

@@ -236,22 +236,19 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <Html position={[isChild ? width / 2 + 0.2 : 1.1, isChild ? height / 2 + 0.1 : 1.1, 0]} center zIndexRange={[100, 0]}>
           <div style={{
             position: 'relative',
-            background: 'rgba(10, 15, 30, 0.85)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(10, 15, 30, 0.95)',
             padding: '16px 20px 12px 12px',
-            borderRadius: '4px',
-            border: `1px solid ${user.color}40`,
-            boxShadow: `0 0 20px ${user.color}20, inset 0 0 10px ${user.color}10`,
+            border: `2px solid ${user.color}`,
+            boxShadow: `4px 4px 0px ${user.color}40`,
             color: '#e0e0e0',
             fontSize: '12px',
             pointerEvents: 'auto',
             whiteSpace: 'nowrap',
-            borderLeft: `3px solid ${user.color}`,
             display: 'flex',
             flexDirection: 'column',
             gap: '8px',
             minWidth: '120px',
-            fontFamily: '"Space Mono", "Noto Sans JP", sans-serif'
+            fontFamily: 'inherit'
           }}>
             <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
               <button
@@ -261,30 +258,30 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                     useStore.getState().deleteNote(note.id);
                   }
                 }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: 0.6, padding: '4px', filter: 'grayscale(100%) brightness(200%)' }}
+                style={{ background: '#000', border: `2px solid ${user.color}`, cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: user.color, fontFamily: 'inherit' }}
                 title="消滅させる"
-                onMouseOver={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.filter = 'none'; }}
-                onMouseOut={(e) => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.filter = 'grayscale(100%) brightness(200%)'; }}
+                onMouseOver={(e) => { e.currentTarget.style.background = user.color; e.currentTarget.style.color = '#000'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = user.color; }}
               >
-                💥
+                DEL
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setFocusedNoteId(null);
                 }}
-                style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '2px', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
+                style={{ background: '#000', border: '2px solid #0ff', cursor: 'pointer', fontSize: '10px', padding: '2px 4px', color: '#0ff', fontFamily: 'inherit' }}
                 title="閉じる"
-                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#0ff'; e.currentTarget.style.color = '#000'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#0ff'; }}
               >
-                ✕
+                [X]
               </button>
             </div>
 
             <div>
-              <div style={{ fontWeight: 'bold', color: user.color, letterSpacing: '1px' }}>{user.name}</div>
-              <div style={{ color: '#888', fontSize: '10px', margin: '4px 0', fontFamily: 'monospace' }}>
+              <div style={{ fontWeight: 'bold', color: user.color, letterSpacing: '2px', textShadow: `2px 2px 0px ${user.color}40` }}>{user.name}</div>
+              <div style={{ color: '#0ff', fontSize: '10px', margin: '4px 0' }}>
                 {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString()}
               </div>
             </div>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 body, html, #root {
   margin: 0;
@@ -8,28 +8,29 @@ body, html, #root {
   overflow: hidden;
   background-color: #0a0f1a;
   color: #fff;
-  font-family: 'Space Mono', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'DotGothic16', 'Space Mono', monospace, sans-serif;
+  image-rendering: pixelated;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar for 8-bit look */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 12px;
+  height: 12px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 3px;
+  background: #000;
+  border-left: 2px solid #333;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background: #555;
+  border: 2px solid #000;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: #888;
 }
 
 .ui-layer {
