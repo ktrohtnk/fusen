@@ -33,7 +33,7 @@ const Minimap = ({ onClose }: { onClose: () => void }) => {
   });
 
   return (
-    <div style={{
+    <div className="ui-content" style={{
       position: 'absolute',
       bottom: isMobile ? 108 : 112,
       right: isMobile ? 'auto' : 20,
@@ -44,9 +44,14 @@ const Minimap = ({ onClose }: { onClose: () => void }) => {
       border: '2px solid #0ff',
       boxShadow: '4px 4px 0px rgba(0,255,255,0.3)',
     }}>
-      <div style={{ position: 'absolute', top: 2, left: 4, fontSize: '9px', color: '#0ff', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', width: 'calc(100% - 8px)', alignItems: 'center' }}>
+      <div style={{ position: 'absolute', top: 2, left: 4, fontSize: '9px', color: '#0ff', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', width: 'calc(100% - 8px)', alignItems: 'center', zIndex: 10 }}>
         <span>RADAR</span>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#0ff', cursor: 'pointer', padding: '2px', lineHeight: 1 }}>✕</button>
+        <button 
+          onClick={(e) => { e.stopPropagation(); onClose(); }} 
+          style={{ background: 'none', border: 'none', color: '#0ff', cursor: 'pointer', padding: '2px', lineHeight: 1 }}
+        >
+          ✕
+        </button>
       </div>
       <svg width={SIZE} height={SIZE} style={{ display: 'block' }}>
         {/* グリッドライン */}
