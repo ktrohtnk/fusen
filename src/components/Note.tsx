@@ -177,6 +177,19 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         </>
       )}
 
+      {/* 日付の表示 */}
+      <Text
+        position={isChild 
+          ? [width / 2 - 0.05, -height / 2 + 0.05, 0.02] 
+          : [0, -0.9, 0.02]}
+        color="#555555"
+        fontSize={isChild ? 0.06 : 0.08}
+        anchorX={isChild ? "right" : "center"}
+        anchorY="bottom"
+      >
+        {new Date(note.created_at).toLocaleDateString()}
+      </Text>
+
       {isFocused && (
         <Html position={[isChild ? width / 2 + 0.2 : 1.4, isChild ? -height / 2 + 0.2 : -1.0, 0]} center zIndexRange={[100, 0]}>
           <div style={{
