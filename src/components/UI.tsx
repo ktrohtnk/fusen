@@ -44,7 +44,7 @@ export const UI = () => {
             ))}
           </div>
           <p style={{ marginTop: '24px', color: '#666', fontSize: '14px', lineHeight: '1.5' }}>
-            This is a closed thought space for K, H, and A. <br/>Thoughts drift, connect, and remain forever.
+            This is a closed space FUSEN for K, H, and A. <br/>Thoughts drift, connect, and remain forever.
           </p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export const UI = () => {
         }}>
           {currentUser.name}
         </div>
-        <div style={{ color: 'white', opacity: 0.5, fontSize: '14px' }}>Thought Space</div>
+        <div style={{ color: 'white', opacity: 0.8, fontSize: '16px', fontWeight: 'bold', letterSpacing: '4px' }}>FUSEN</div>
       </div>
 
       {/* わかりやすいフォーカス解除（戻る）ボタン */}
