@@ -119,14 +119,11 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     }
 
     if (isDeleting && meshRef.current) {
-      // サノスエフェクト: 本体は一瞬で消滅し、パーティクルだけが残って風に舞う
-      meshRef.current.position.y += 0.08; 
-      
-      meshRef.current.traverse((child) => {
-        if ((child as any).isMesh) {
-          child.visible = false;
-        }
-      });
+      // サノスエフェクト: 回転しながら縮む
+      meshRef.current.scale.lerp(new THREE.Vector3(0.01, 0.01, 0.01), 0.05);
+      meshRef.current.rotation.z += 0.2;
+      meshRef.current.rotation.x += 0.1;
+      meshRef.current.position.y += 0.02; // 少し上に舞い上がる
     }
   });
 
@@ -161,8 +158,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         setFocusedNoteId(isFocused ? null : note.id);
       }}
     >
-      <group visible={!isDeleting}>
-        <mesh receiveShadow castShadow>
+      <mesh receiveShadow castShadow>
         {isChild ? (
           <planeGeometry args={[width, height]} />
         ) : (
@@ -403,17 +399,15 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           </button>
         </Html>
       )}
-      </group>
-
       {/* サノスエフェクト用パーティクル */}
       {isDeleting && (
         <Sparkles 
-          count={1500} 
-          scale={isChild ? [3, 3, 3] : [5, 5, 5]} 
-          size={isChild ? 2 : 3} 
-          speed={15} 
+          count={200} 
+          scale={isChild ? [1.5, 1.5, 1.5] : [2.5, 2.5, 2.5]} 
+          size={isChild ? 4 : 6} 
+          speed={4} 
           color={user.color} 
-          noise={4} 
+          noise={1} 
         />
       )}
     </group>
