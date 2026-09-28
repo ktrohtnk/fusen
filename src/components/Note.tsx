@@ -251,6 +251,31 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                 </a>
               </div>
             )}
+
+            {/* 衛星へのジャンプリンク（恒星がフォーカスされている時） */}
+            {!isChild && connections.some(c => c.from_note_id === note.id) && (
+              <div style={{ marginTop: '8px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+                <div style={{ fontSize: '10px', color: '#999', marginBottom: '4px' }}>衛星へジャンプ:</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '100px', overflowY: 'auto' }}>
+                  {useStore.getState().notes
+                    .filter(n => connections.some(c => c.from_note_id === note.id && c.to_note_id === n.id))
+                    .map(child => (
+                      <button 
+                        key={child.id}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setFocusedNoteId(child.id); 
+                        }}
+                        style={{ display: 'block', background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', fontSize: '12px', textAlign: 'left', padding: '2px 0' }}
+                        onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                        onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                      >
+                        ↳ {child.text ? (child.text.length > 10 ? child.text.substring(0, 10) + '...' : child.text) : (child.image_url ? '[画像]' : '無題の衛星')}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         </Html>
       )}
