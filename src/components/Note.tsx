@@ -177,9 +177,9 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       </mesh>
 
       {/* クリック判定用の透明な大きなヒットボックス */}
-      <mesh position={[0, 0, 0.1]} visible={false}>
+      <mesh position={[0, 0, 0.1]}>
         <planeGeometry args={isChild ? [width * 1.5, height * 1.5] : [3, 3]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {/* グラデーション付きの細いエッジ */}
