@@ -158,8 +158,10 @@ export const UI = () => {
               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
               onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
             >
-              <div style={{ color: '#aaa', fontSize: '10px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{new Date(star.created_at).toLocaleDateString()}</span>
+              <div style={{ color: '#aaa', fontSize: '12px', fontWeight: '500', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>
+                  {new Date(star.created_at).toLocaleDateString()} {new Date(star.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -176,7 +178,7 @@ export const UI = () => {
                   💥
                 </button>
               </div>
-              <div style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ color: '#fff', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.4' }}>
                 {star.text || (star.image_url ? '[画像]' : '無題の恒星')}
               </div>
             </div>
