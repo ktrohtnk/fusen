@@ -128,8 +128,23 @@ export const UI = () => {
               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
               onMouseOut={(e) => e.currentTarget.style.background = focusedNoteId === star.id ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)'}
             >
-              <div style={{ color: '#aaa', fontSize: '10px', marginBottom: '4px' }}>
-                {new Date(star.created_at).toLocaleDateString()}
+              <div style={{ color: '#aaa', fontSize: '10px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{new Date(star.created_at).toLocaleDateString()}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('この恒星（と思考の繋がりすべて）を完全に消滅させますか？')) {
+                      useStore.getState().deleteNote(star.id);
+                    }
+                  }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', opacity: 0.5, padding: 0
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseOut={(e) => e.currentTarget.style.opacity = '0.5'}
+                >
+                  💥
+                </button>
               </div>
               <div style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {star.text || (star.image_url ? '[画像]' : '無題の恒星')}
