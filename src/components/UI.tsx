@@ -368,12 +368,9 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
         ) : (
           <div style={{ color: '#ff0', fontSize: '10px', letterSpacing: '2px', textShadow: '1px 1px 0px #000' }}>[ TIMELINE ]</div>
         )}
-        
-        {isMobile && (
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#ff0', cursor: 'pointer' }}>
-            <X size={24} />
-          </button>
-        )}
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#ff0', cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Close Timeline">
+          <X size={20} />
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'auto' }}>
