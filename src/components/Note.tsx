@@ -53,6 +53,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
   const isFocused = focusedNoteId === note.id;
 
   const isChild = useMemo(() => connections.some(c => c.to_note_id === note.id), [connections, note.id]);
+  const childIds = useMemo(() => connections.filter(c => c.from_note_id === note.id).map(c => c.to_note_id), [connections, note.id]);
   
   const width = isChild ? 1.0 : 2.0;
   const height = isChild ? 0.8 : 1.5;
@@ -78,6 +79,32 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       const pState = physicsState.current[note.id];
       meshRef.current.position.copy(pState.position);
       meshRef.current.lookAt(camera.position);
+
+      // 衛星への方向を示す矢印の更新
+      if (!isChild) {
+        childIds.forEach(childId => {
+          const childState = physicsState.current[childId];
+          if (childState) {
+            const indicator = meshRef.current!.getObjectByName(`indicator-${childId}`) as THREE.Mesh;
+            if (indicator) {
+              const diff = new THREE.Vector3().subVectors(childState.position, meshRef.current!.position);
+              // カメラに向いている星のローカル座標系に変換
+              const localDiff = diff.clone().applyQuaternion(meshRef.current!.quaternion.clone().invert());
+              localDiff.z = 0; // XY平面（星の盤面）に投影
+              
+              if (localDiff.lengthSq() > 0.001) {
+                localDiff.normalize();
+                // 縁の少し内側 (半径 1.05) に配置
+                indicator.position.copy(localDiff.clone().multiplyScalar(1.05));
+                indicator.position.z = 0.05; // 星本体より手前に出す
+                
+                const angle = Math.atan2(localDiff.y, localDiff.x);
+                indicator.rotation.set(0, 0, angle - Math.PI / 2);
+              }
+            }
+          }
+        });
+      }
     }
     
     if (glowRef.current && !isChild) {
@@ -151,6 +178,20 @@ export const Note = ({ note, physicsState }: NoteProps) => {
           />
         </mesh>
       )}
+
+      {/* 衛星の位置を示すレーダー矢印（恒星の淵） */}
+      {!isChild && childIds.map(childId => (
+        <mesh key={`indicator-${childId}`} name={`indicator-${childId}`}>
+          {/* 半径, 高さ, 分割数3で平らな三角形を作る */}
+          <coneGeometry args={[0.08, 0.15, 3]} />
+          <meshBasicMaterial 
+            color={displayColor} 
+            toneMapped={false}
+            transparent
+            opacity={0.8}
+          />
+        </mesh>
+      ))}
 
       {note.image_url && (
         <DreiImage 
