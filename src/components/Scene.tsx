@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { MapControls, Environment } from '@react-three/drei';
+import { OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useStore } from '../store';
@@ -134,14 +134,23 @@ export const Scene = () => {
       
       <Environment preset="city" opacity={0.1} background={false} />
 
-      <MapControls 
+      <OrbitControls 
         ref={controlsRef}
         enableDamping={true}
-        dampingFactor={0.05}
+        dampingFactor={0.015} // 0.05 -> 0.015 に変更して、氷の上を滑るような強い慣性にする
         minDistance={2}
         maxDistance={50}
         panSpeed={2.0}
         zoomSpeed={2.0}
+        mouseButtons={{
+          LEFT: THREE.MOUSE.PAN, // 左クリックで上下左右に自由にパン
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.ROTATE
+        }}
+        touches={{
+          ONE: THREE.TOUCH.PAN,
+          TWO: THREE.TOUCH.DOLLY_ROTATE
+        }}
       />
 
       {notes.map(note => (

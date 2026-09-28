@@ -302,27 +302,6 @@ export const UI = () => {
         </div>
       )}
 
-      {/* Deselect overlay hint */}
-      {focusedNoteId && !isCreating && (
-        <div 
-          className="ui-content"
-          style={{
-            position: 'absolute',
-            bottom: 40,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.5)',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '20px',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}
-          onClick={() => setFocusedNoteId(null)}
-        >
-          Click to unfocus
-        </div>
-      )}
     </div>
   );
 };

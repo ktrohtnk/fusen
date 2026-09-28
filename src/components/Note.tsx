@@ -52,13 +52,21 @@ export const Note = ({ note, physicsState }: NoteProps) => {
     };
   }
 
-  useFrame(() => {
+  const glowRef = useRef<THREE.Mesh>(null);
+  const timeOffset = useRef(Math.random() * 100);
+
+  useFrame((state) => {
     if (meshRef.current && physicsState.current[note.id]) {
-      const state = physicsState.current[note.id];
-      meshRef.current.position.copy(state.position);
-      
-      // 文字が常に読みやすいように、常にカメラの方を向かせる（ビルボード化）
+      const pState = physicsState.current[note.id];
+      meshRef.current.position.copy(pState.position);
       meshRef.current.lookAt(camera.position);
+    }
+    
+    // 恒星のゆっくりとした明滅（呼吸するような光）
+    if (glowRef.current && !isChild) {
+      const pulse = (Math.sin(state.clock.elapsedTime * 1.5 + timeOffset.current) + 1) / 2; // 0.0 to 1.0
+      const material = glowRef.current.material as THREE.MeshBasicMaterial;
+      material.opacity = 0.15 + pulse * 0.4; // 0.15 から 0.55 の間を行き来する
     }
   });
 
@@ -106,6 +114,20 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         />
       </mesh>
 
+      {/* 恒星用のゆっくり明滅するオーラ（縁の光） */}
+      {!isChild && (
+        <mesh position={[0, 0, -0.01]} ref={glowRef}>
+          <planeGeometry args={[width + 0.3, height + 0.3]} />
+          <meshBasicMaterial 
+            color={displayColor}
+            transparent
+            opacity={0.5}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
+
       {note.image_url && (
         <DreiImage 
           url={note.image_url} 
@@ -135,8 +157,9 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {isFocused && (
         <Html position={[width / 2 + 0.2, -height / 2 + 0.2, 0]} center zIndexRange={[100, 0]}>
           <div style={{
+            position: 'relative',
             background: 'rgba(255, 255, 255, 0.95)',
-            padding: '12px',
+            padding: '16px 20px 12px 12px',
             borderRadius: '12px',
             fontSize: '12px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
@@ -145,8 +168,39 @@ export const Note = ({ note, physicsState }: NoteProps) => {
             borderLeft: `4px solid ${user.color}`,
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px'
+            gap: '8px',
+            minWidth: '120px'
           }}>
+            {/* Top Right Action Buttons */}
+            <div style={{ position: 'absolute', top: '4px', right: '4px', display: 'flex', gap: '4px' }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
+                    useStore.getState().deleteNote(note.id);
+                  }
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', opacity: 0.6, padding: '4px' }}
+                title="消滅させる"
+                onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+              >
+                💥
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFocusedNoteId(null);
+                }}
+                style={{ background: '#f0f0f0', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}
+                title="閉じる"
+                onMouseOver={(e) => e.currentTarget.style.background = '#e0e0e0'}
+                onMouseOut={(e) => e.currentTarget.style.background = '#f0f0f0'}
+              >
+                ✕
+              </button>
+            </div>
+
             <div>
               <div style={{ fontWeight: 'bold' }}>{user.name}</div>
               <div style={{ color: '#666', fontSize: '10px', margin: '4px 0' }}>
@@ -161,29 +215,6 @@ export const Note = ({ note, physicsState }: NoteProps) => {
                 </a>
               </div>
             )}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm('この思考（惑星）を完全に消滅させますか？')) {
-                  useStore.getState().deleteNote(note.id);
-                }
-              }}
-              style={{
-                marginTop: '4px',
-                padding: '4px 8px',
-                background: '#ffeeee',
-                color: '#cc0000',
-                border: '1px solid #ffcccc',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                alignSelf: 'flex-start'
-              }}
-            >
-              💥 惑星を消滅させる
-            </button>
           </div>
         </Html>
       )}
