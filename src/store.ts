@@ -143,10 +143,7 @@ export const useStore = create<AppState>((set, get) => ({
           rotation_z: newNote.rotation.z,
         });
         
-        if (noteError) {
-          console.error("Note insert error:", noteError);
-          window.alert(`保存エラー(Note): ${noteError.message}\n※Supabaseの制約(外部キーなど)を確認してください。`);
-        }
+        if (noteError) console.error("Note insert error:", noteError);
 
         if (newConn) {
           const { error: connError } = await supabase.from('connections').insert({
@@ -154,14 +151,10 @@ export const useStore = create<AppState>((set, get) => ({
             from_note_id: newConn.from_note_id,
             to_note_id: newConn.to_note_id
           });
-          if (connError) {
-            console.error("Connection insert error:", connError);
-            window.alert(`保存エラー(Connection): ${connError.message}`);
-          }
+          if (connError) console.error("Connection insert error:", connError);
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error("Failed to save to supabase", e);
-        window.alert(`保存エラー(Exception): ${e.message}`);
       }
     }
   },
