@@ -187,7 +187,9 @@ export const Scene = () => {
   useFrame((state, delta) => {
     const dt = Math.min(delta, 0.1);
     const statesEntries = Object.entries(physicsState.current);
-    const isSatellite = (id: string) => connections.some(c => c.to_note_id === id);
+    const satelliteIds = new Set<string>();
+    connections.forEach(c => satelliteIds.add(c.to_note_id));
+    const isSatellite = (id: string) => satelliteIds.has(id);
 
     for (let i = 0; i < statesEntries.length; i++) {
       const [idI, noteState] = statesEntries[i];
@@ -209,8 +211,7 @@ export const Scene = () => {
 
       const isStarI = !isSatellite(idI);
 
-      for (let j = 0; j < statesEntries.length; j++) {
-        if (i === j) continue;
+      for (let j = i + 1; j < statesEntries.length; j++) {
         const [idJ, other] = statesEntries[j];
         const isStarJ = !isSatellite(idJ);
 
@@ -229,7 +230,9 @@ export const Scene = () => {
         }
 
         if (dist > 0 && dist < repulseRadius) {
-          noteState.acceleration.addScaledVector(diff.normalize(), (1 / (dist * dist)) * repulseForce * dt);
+          const force = diff.normalize().multiplyScalar((1 / (dist * dist)) * repulseForce * dt);
+          if (!noteState.isDragging) noteState.acceleration.add(force);
+          if (!other.isDragging) other.acceleration.sub(force);
         }
       }
     }
