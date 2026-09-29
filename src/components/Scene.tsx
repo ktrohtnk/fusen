@@ -161,11 +161,15 @@ export const Scene = () => {
           const clusterNotes = clusterIds.map(id => notes.find(n => n.id === id)!).filter(Boolean);
           // 代表ノート（一番古いものをベースにする）
           clusterNotes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-          const repNote = clusterNotes[0];
           
-          // ラベル作成（先頭12文字程度）
-          let labelText = repNote.text.split('\n')[0].substring(0, 15);
-          if (repNote.text.length > 15) labelText += '...';
+          // テキストがあるノートを探す
+          const repNote = clusterNotes.find(n => n.text && n.text.trim().length > 0) || clusterNotes[0];
+          
+          let labelText = 'IMAGE STAR';
+          if (repNote && repNote.text) {
+            labelText = repNote.text.split('\n')[0].substring(0, 15);
+            if (repNote.text.length > 15) labelText += '...';
+          }
           
           clusters.push({ ids: clusterIds, label: labelText });
         }

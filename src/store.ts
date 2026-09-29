@@ -68,8 +68,8 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export const generateEmbedding = async (text: string): Promise<number[]> => {
-  if (!aiWorker || !isAiReady || !text.trim()) return [];
+export const generateEmbedding = async (text?: string): Promise<number[]> => {
+  if (!aiWorker || !isAiReady || !text || !text.trim()) return [];
   return new Promise((resolve) => {
     const id = uuidv4();
     pendingEmbeddings.set(id, resolve);
