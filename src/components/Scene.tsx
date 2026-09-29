@@ -271,7 +271,10 @@ export const Scene = () => {
           if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
           
           if (!stateTo.isDragging) {
-            stateTo.acceleration.add(tangent.multiplyScalar(0.005 * dt)); // スピードを抑える
+            // 公転速度を極めて遅くする
+            stateTo.acceleration.add(tangent.multiplyScalar(0.0002 * dt)); 
+            // 速度の蓄積を防ぐため、公転方向の速度を強めに減衰させる
+            stateTo.velocity.multiplyScalar(0.95);
           }
         } else {
           // 衛星の衛星：親の下に連なるように固定する（回転せず、重なる）
