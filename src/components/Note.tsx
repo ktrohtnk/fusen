@@ -176,12 +176,6 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         />
       </mesh>
 
-      {/* クリック判定用の透明な大きなヒットボックス */}
-      <mesh position={[0, 0, 0.1]}>
-        <planeGeometry args={isChild ? [width * 1.5, height * 1.5] : [3, 3]} />
-        <meshBasicMaterial transparent opacity={0.01} depthWrite={false} />
-      </mesh>
-
       {/* グラデーション付きの細いエッジ */}
       {!isChild && (
         <mesh position={[0, 0, -0.01]} ref={glowRef}>
@@ -283,10 +277,8 @@ export const Note = ({ note, physicsState }: NoteProps) => {
         <Html 
           position={
             isChild 
-              ? [0, 0, 0.5] 
-              : size.width < 640 
-                ? [0, 0, 1.0] 
-                : [1.1, 1.1, 0]
+              ? (size.width < 640 ? [0, -height / 2 - 0.3, 0] : [width / 2 + 0.3, height / 2, 0])
+              : (size.width < 640 ? [0, -1.2, 0] : [1.1, 1.1, 0])
           } 
           center 
           zIndexRange={[100, 0]}
