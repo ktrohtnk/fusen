@@ -191,11 +191,17 @@ export const Scene = () => {
     connections.forEach(c => satelliteIds.add(c.to_note_id));
     const isSatellite = (id: string) => satelliteIds.has(id);
 
+    // 1. すべての加速度をリセット
+    for (let i = 0; i < statesEntries.length; i++) {
+      if (!statesEntries[i][1].isDragging) {
+        statesEntries[i][1].acceleration.set(0, 0, 0);
+      }
+    }
+
+    // 2. 引力と反発力の計算
     for (let i = 0; i < statesEntries.length; i++) {
       const [idI, noteState] = statesEntries[i];
       if (noteState.isDragging) continue;
-
-      noteState.acceleration.set(0, 0, 0);
 
       const time = Date.now() * 0.001;
       const idHash = parseInt(idI.substring(0, 4), 16); 
@@ -229,8 +235,10 @@ export const Scene = () => {
           repulseForce = 0.1;
         }
 
-        if (dist > 0 && dist < repulseRadius) {
-          const force = diff.normalize().multiplyScalar((1 / (dist * dist)) * repulseForce * dt);
+        if (dist > 0.01 && dist < repulseRadius) {
+          // 距離が近すぎる場合の物理爆発（Infinity）を防ぐため、安全な下限を設ける
+          const safeDist = Math.max(dist, 0.5); 
+          const force = diff.normalize().multiplyScalar((1 / (safeDist * safeDist)) * repulseForce * dt);
           if (!noteState.isDragging) noteState.acceleration.add(force);
           if (!other.isDragging) other.acceleration.sub(force);
         }
