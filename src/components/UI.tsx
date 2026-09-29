@@ -677,10 +677,10 @@ export const UI = () => {
           </div>
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <textarea autoFocus placeholder="Transmit your thought..." value={text} onChange={e => setText(e.target.value)}
-              style={{ width: '100%', minHeight: '100px', padding: '12px', border: `2px solid ${currentUser.color}`, background: '#000', color: '#fff', resize: 'none', fontFamily: 'inherit', fontSize: '12px', boxSizing: 'border-box' }}
+              style={{ width: '100%', minHeight: '100px', padding: '12px', border: `2px solid ${currentUser.color}`, background: '#000', color: '#fff', resize: 'none', fontFamily: 'inherit', fontSize: isMobile ? '16px' : '12px', boxSizing: 'border-box' }}
             />
             <input type="url" placeholder="URL (optional)" value={url} onChange={e => setUrl(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', border: `2px solid ${currentUser.color}`, background: '#000', color: '#fff', fontFamily: 'inherit', fontSize: '12px', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px', border: `2px solid ${currentUser.color}`, background: '#000', color: '#fff', fontFamily: 'inherit', fontSize: isMobile ? '16px' : '12px', boxSizing: 'border-box' }}
             />
             <input type="file" accept="image/*" ref={fileInputRef} style={{ display: 'none' }}
               onChange={e => { if (e.target.files?.[0]) setSelectedImage(e.target.files[0]); }}
