@@ -359,11 +359,18 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
 
     const childrenMap = new Map<string, string[]>();
     connections.forEach(c => {
+      // 親が存在しない接続は無視する
+      if (!notes.some(n => n.id === c.from_note_id)) return;
       if (!childrenMap.has(c.from_note_id)) childrenMap.set(c.from_note_id, []);
       childrenMap.get(c.from_note_id)!.push(c.to_note_id);
     });
 
-    const isChild = (id: string) => connections.some(c => c.to_note_id === id);
+    const isChild = (id: string) => {
+      const conn = connections.find(c => c.to_note_id === id);
+      if (!conn) return false;
+      return notes.some(n => n.id === conn.from_note_id); // 親が存在する場合のみ子とみなす
+    };
+    
     const rootNotes = notes.filter(n => !isChild(n.id));
     
     rootNotes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -739,7 +746,7 @@ export const UI = () => {
           onMouseOver={e => { e.currentTarget.style.background = currentUser.color; e.currentTarget.style.color = '#000'; e.currentTarget.style.boxShadow = `4px 4px 0px ${currentUser.color}50`; }}
           onMouseOut={e => { e.currentTarget.style.background = '#0a0f1a'; e.currentTarget.style.color = currentUser.color; e.currentTarget.style.boxShadow = `6px 6px 0px ${currentUser.color}50`; }}
         >
-          <Plus size={32} strokeWidth={3} /> CREATE STAR
+          <Plus size={32} strokeWidth={3} /> {focusedNoteId ? 'ADD SATELLITE' : 'CREATE STAR'}
         </button>
       )}
 
