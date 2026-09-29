@@ -229,7 +229,7 @@ export const Note = ({ note, physicsState }: NoteProps) => {
 
         return (
           <Text
-            position={[0, note.image_url ? -height * 0.25 : 0, 0.02]}
+            position={[0, note.image_url ? -height * 0.25 : 0, 0.05]}
             color={isChild ? '#1a1a1a' : '#ffffff'}
             fontSize={dFontSize}
             maxWidth={dMaxWidth}
