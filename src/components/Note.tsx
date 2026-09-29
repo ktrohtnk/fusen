@@ -248,10 +248,10 @@ export const Note = ({ note, physicsState }: NoteProps) => {
       {/* 日付と時間の表示 */}
       <Text
         position={isChild
-          ? [width / 2 - 0.05, -height / 2 + 0.05, 0.02]
-          : [0, -0.9, 0.02]}
-        color={isChild ? '#333333' : '#aaaaaa'}
-        fontSize={isChild ? 0.05 : 0.065}
+          ? [width / 2 - 0.05, -height / 2 + 0.08, 0.02]
+          : [0, -1.0, 0.02]}
+        color={isChild ? '#000000' : '#ffffff'}
+        fontSize={isChild ? 0.08 : 0.11}
         anchorX={isChild ? "right" : "center"}
         anchorY="bottom"
         sdfGlyphSize={64}
