@@ -29,6 +29,7 @@ export type NoteData = {
   acceleration: THREE.Vector3;
   rotation: THREE.Euler;
   angularVelocity: THREE.Euler;
+  embedding?: number[];
 };
 
 export type ConnectionData = {
@@ -36,6 +37,46 @@ export type ConnectionData = {
   from_note_id: string;
   to_note_id: string;
 };
+
+// --- AI Worker Setup ---
+let aiWorker: Worker | null = null;
+let isAiReady = false;
+let pendingEmbeddings = new Map<string, (embedding: number[]) => void>();
+
+if (typeof window !== 'undefined') {
+  aiWorker = new Worker(new URL('./aiWorker.ts', import.meta.url), { type: 'module' });
+  aiWorker.postMessage({ type: 'init' });
+  
+  aiWorker.addEventListener('message', (e) => {
+    if (e.data.status === 'ready') {
+      isAiReady = true;
+      console.log('AI Worker is ready');
+    } else if (e.data.status === 'complete') {
+      const resolve = pendingEmbeddings.get(e.data.id);
+      if (resolve) {
+        resolve(e.data.embedding);
+        pendingEmbeddings.delete(e.data.id);
+      }
+    } else if (e.data.status === 'error') {
+      console.error('AI Worker error:', e.data.error);
+      const resolve = pendingEmbeddings.get(e.data.id);
+      if (resolve) {
+        resolve([]); // Return empty on error
+        pendingEmbeddings.delete(e.data.id);
+      }
+    }
+  });
+}
+
+export const generateEmbedding = async (text: string): Promise<number[]> => {
+  if (!aiWorker || !isAiReady || !text.trim()) return [];
+  return new Promise((resolve) => {
+    const id = uuidv4();
+    pendingEmbeddings.set(id, resolve);
+    aiWorker!.postMessage({ id, text });
+  });
+};
+// -----------------------
 
 interface AppState {
   currentUser: User | null;
@@ -83,7 +124,7 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  addNote: async (text, url, parentId, image_url) => {
+  addNote: async (text, url, parentId, image_url, embedding) => {
     const { currentUser, notes, focusedNoteId } = get();
     if (!currentUser) return;
 
@@ -110,7 +151,8 @@ export const useStore = create<AppState>((set, get) => ({
       velocity: new THREE.Vector3((Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02),
       acceleration: new THREE.Vector3(0, 0, 0),
       rotation: new THREE.Euler(0, Math.random() * Math.PI, 0),
-      angularVelocity: new THREE.Euler(0, (Math.random() - 0.5) * 0.01, 0)
+      angularVelocity: new THREE.Euler(0, (Math.random() - 0.5) * 0.01, 0),
+      embedding
     };
 
     set((state) => ({ notes: [...state.notes, newNote] }));
@@ -122,7 +164,7 @@ export const useStore = create<AppState>((set, get) => ({
         from_note_id: targetParentId,
         to_note_id: newNote.id
       };
-      set((state) => ({ connections: [...state.connections, newConn] }));
+      set((state) => ({ connections: [...state.connections, newConn!] }));
     }
 
     // Save to Supabase (if configured)
@@ -141,6 +183,7 @@ export const useStore = create<AppState>((set, get) => ({
           rotation_x: newNote.rotation.x,
           rotation_y: newNote.rotation.y,
           rotation_z: newNote.rotation.z,
+          embedding: embedding && embedding.length > 0 ? `[${embedding.join(',')}]` : null
         });
         
         if (noteError) {
@@ -201,19 +244,30 @@ export const useStore = create<AppState>((set, get) => ({
       if (connError) console.error("Fetch connections error:", connError);
 
       if (notesData) {
-        const loadedNotes = notesData.map(n => ({
-          id: n.id,
-          user_id: n.user_id,
-          text: n.text,
-          url: n.url,
-          image_url: n.image_url,
-          created_at: n.created_at,
-          position: new THREE.Vector3(n.x, n.y, n.z),
-          velocity: new THREE.Vector3(0, 0, 0),
-          acceleration: new THREE.Vector3(0, 0, 0),
-          rotation: new THREE.Euler(n.rotation_x, n.rotation_y, n.rotation_z),
-          angularVelocity: new THREE.Euler(0, 0, 0)
-        }));
+        const loadedNotes = notesData.map(n => {
+          let parsedEmbedding;
+          if (n.embedding) {
+            try {
+              parsedEmbedding = JSON.parse(n.embedding);
+            } catch (e) {
+              // fallback
+            }
+          }
+          return {
+            id: n.id,
+            user_id: n.user_id,
+            text: n.text,
+            url: n.url,
+            image_url: n.image_url,
+            created_at: n.created_at,
+            position: new THREE.Vector3(n.x, n.y, n.z),
+            velocity: new THREE.Vector3(0, 0, 0),
+            acceleration: new THREE.Vector3(0, 0, 0),
+            rotation: new THREE.Euler(n.rotation_x, n.rotation_y, n.rotation_z),
+            angularVelocity: new THREE.Euler(0, 0, 0),
+            embedding: parsedEmbedding
+          };
+        });
         set({ notes: loadedNotes });
       }
 

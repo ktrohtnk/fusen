@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Environment, Stars, Sparkles } from '@react-three/drei';
 import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing';
@@ -6,13 +6,36 @@ import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import { useStore } from '../store';
 import { Note } from './Note';
-import { Connections } from './Connections';
+import { Connections, SemanticConnections } from './Connections';
+import { cosineSimilarity } from '../utils';
 
 export const Scene = () => {
   const notes = useStore(state => state.notes);
   const connections = useStore(state => state.connections);
   const focusedNoteId = useStore(state => state.focusedNoteId);
   const controlsRef = useRef<OrbitControlsImpl>(null);
+  
+  // 意味的に似ているノートのペアをキャッシュ
+  const semanticPairs = useMemo(() => {
+    const pairs: { id1: string, id2: string, strength: number }[] = [];
+    const notesWithEmbedding = notes.filter(n => n.embedding && n.embedding.length > 0);
+    
+    for (let i = 0; i < notesWithEmbedding.length; i++) {
+      for (let j = i + 1; j < notesWithEmbedding.length; j++) {
+        const n1 = notesWithEmbedding[i];
+        const n2 = notesWithEmbedding[j];
+        
+        // すでに明示的な接続がある場合は除外
+        if (connections.some(c => (c.from_note_id === n1.id && c.to_note_id === n2.id) || (c.from_note_id === n2.id && c.to_note_id === n1.id))) continue;
+        
+        const sim = cosineSimilarity(n1.embedding!, n2.embedding!);
+        if (sim > 0.6) { // 類似度のしきい値
+          pairs.push({ id1: n1.id, id2: n2.id, strength: (sim - 0.6) * 2.5 }); // 0~1の強さにマッピング
+        }
+      }
+    }
+    return pairs;
+  }, [notes, connections]);
   
   const physicsState = useRef<Record<string, {
     position: THREE.Vector3;
@@ -109,6 +132,24 @@ export const Scene = () => {
         }
       }
     });
+    
+    // AI 意味的引力 (Semantic Gravity)
+    semanticPairs.forEach(pair => {
+      const state1 = physicsState.current[pair.id1];
+      const state2 = physicsState.current[pair.id2];
+      if (state1 && state2) {
+        const diff = new THREE.Vector3().subVectors(state2.position, state1.position);
+        const dist = diff.length();
+        
+        // 遠すぎると効果なし、近すぎると反発で相殺される。適度な距離で引き合う
+        if (dist > 3.0 && dist < 15.0) {
+          // strength (0~1) に応じたゆるやかな引力
+          const force = diff.normalize().multiplyScalar(pair.strength * 0.1 * dt);
+          if (!state1.isDragging) state1.acceleration.add(force);
+          if (!state2.isDragging) state2.acceleration.sub(force);
+        }
+      }
+    });
 
     for (let i = 0; i < statesEntries.length; i++) {
       const [_, noteState] = statesEntries[i];
@@ -169,6 +210,7 @@ export const Scene = () => {
       />
 
       <Connections physicsState={physicsState} />
+      <SemanticConnections physicsState={physicsState} semanticPairs={semanticPairs} />
       
       {/* 宇宙のチリや星屑（奥行き可視化） */}
       <Stars radius={100} depth={50} count={3000} factor={3} saturation={0.5} fade speed={1} />

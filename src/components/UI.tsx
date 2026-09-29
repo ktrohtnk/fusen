@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useStore, USERS } from '../store';
-import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X, List } from 'lucide-react';
+import { useStore, USERS, generateEmbedding } from '../store';
+import { Send, Plus, Link as LinkIcon, Image as ImageIcon, Map, CalendarDays, Search, X, List, Sparkles } from 'lucide-react';
 import { supabase } from '../supabase';
+import { cosineSimilarity } from '../utils';
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
@@ -459,6 +460,10 @@ export const UI = () => {
   const isMobile = useIsMobile();
   const [showTimeline, setShowTimeline] = useState(!isMobile);
   const [timelineDate, setTimelineDate] = useState<string | null>(null);
+  
+  // AI Suggestions
+  const [suggestions, setSuggestions] = useState<{ noteId: string, similarity: number }[]>([]);
+  const searchTimeoutRef = useRef<number | null>(null);
 
   // モバイル切り替え時にタイムラインの初期表示を切り替える
   useEffect(() => {
@@ -518,6 +523,41 @@ export const UI = () => {
     );
   }
 
+  // AI サジェストの debounce 処理
+  useEffect(() => {
+    if (!text.trim() || !isCreating) {
+      setSuggestions([]);
+      return;
+    }
+    
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    
+    searchTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        const queryEmbedding = await generateEmbedding(text);
+        if (!queryEmbedding.length) return;
+        
+        const results = notes
+          .filter(n => n.embedding && n.embedding.length > 0)
+          .map(n => ({
+            noteId: n.id,
+            similarity: cosineSimilarity(queryEmbedding, n.embedding!)
+          }))
+          .filter(n => n.similarity > 0.5) // しきい値
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, 3); // 最大3件
+          
+        setSuggestions(results);
+      } catch (e) {
+        console.error("Embedding error:", e);
+      }
+    }, 500); // 500ms debounce
+    
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [text, isCreating, notes]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() && !selectedImage) return;
@@ -532,7 +572,9 @@ export const UI = () => {
         imageUrl = data.publicUrl;
       }
     }
-    addNote(text, url, focusedNoteId || undefined, imageUrl || undefined);
+    
+    const embedding = await generateEmbedding(text);
+    addNote(text, url, focusedNoteId || undefined, imageUrl || undefined, embedding);
     setText(''); setUrl(''); setSelectedImage(null); setIsUploading(false); setIsCreating(false);
   };
 
@@ -696,6 +738,35 @@ export const UI = () => {
                 {isUploading ? 'UPLOADING...' : <><Send size={14} /> {focusedNoteId ? 'ATTACH' : 'DROP'}</>}
               </button>
             </div>
+            
+            {/* AI サジェスト領域 */}
+            {suggestions.length > 0 && (
+              <div style={{ marginTop: '8px', borderTop: '1px dashed #333', paddingTop: '8px' }}>
+                <div style={{ fontSize: '10px', color: '#0ff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Sparkles size={12} /> AI SUGGESTIONS (Similar thoughts)
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {suggestions.map((s, idx) => {
+                    const n = notes.find(note => note.id === s.noteId);
+                    if (!n) return null;
+                    return (
+                      <div 
+                        key={idx}
+                        onClick={() => setFocusedNoteId(n.id)}
+                        style={{ 
+                          fontSize: '11px', padding: '8px', background: focusedNoteId === n.id ? '#0ff3' : '#111', 
+                          border: `1px solid ${focusedNoteId === n.id ? '#0ff' : '#333'}`, cursor: 'pointer',
+                          color: '#ccc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {Math.round(s.similarity * 100)}% Match: {n.text}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </form>
         </div>
       )}

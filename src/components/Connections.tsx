@@ -59,3 +59,55 @@ export const Connections = ({ physicsState }: ConnectionsProps) => {
     </lineSegments>
   );
 };
+
+export const SemanticConnections = ({ physicsState, semanticPairs }: { 
+  physicsState: ConnectionsProps['physicsState'], 
+  semanticPairs: { id1: string, id2: string, strength: number }[] 
+}) => {
+  const lineGeometry = useRef(new THREE.BufferGeometry());
+  const positions = useMemo(() => new Float32Array(semanticPairs.length * 6), [semanticPairs.length]);
+  const colors = useMemo(() => new Float32Array(semanticPairs.length * 6), [semanticPairs.length]);
+  
+  useFrame(() => {
+    if (!lineGeometry.current) return;
+    
+    let offset = 0;
+    semanticPairs.forEach(pair => {
+      const state1 = physicsState.current[pair.id1];
+      const state2 = physicsState.current[pair.id2];
+      
+      if (state1 && state2) {
+        positions[offset * 6] = state1.position.x;
+        positions[offset * 6 + 1] = state1.position.y;
+        positions[offset * 6 + 2] = state1.position.z;
+        
+        positions[offset * 6 + 3] = state2.position.x;
+        positions[offset * 6 + 4] = state2.position.y;
+        positions[offset * 6 + 5] = state2.position.z;
+        
+        // 類似度(strength)が高いほど濃くする
+        const alpha = Math.min(0.4, pair.strength * 0.5);
+        for(let i=0; i<6; i+=3) {
+          colors[offset * 6 + i] = 0.0; // R
+          colors[offset * 6 + i + 1] = 1.0; // G
+          colors[offset * 6 + i + 2] = 1.0; // B
+        }
+      }
+      offset++;
+    });
+    
+    lineGeometry.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    lineGeometry.current.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    lineGeometry.current.attributes.position.needsUpdate = true;
+    lineGeometry.current.attributes.color.needsUpdate = true;
+  });
+
+  if (semanticPairs.length === 0) return null;
+
+  return (
+    <lineSegments geometry={lineGeometry.current}>
+      {/* 意味的な繋がりはシアンの点線 */}
+      <lineDashedMaterial vertexColors transparent opacity={0.3} toneMapped={false} dashSize={0.2} gapSize={0.2} />
+    </lineSegments>
+  );
+};
