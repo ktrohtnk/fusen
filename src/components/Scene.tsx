@@ -17,7 +17,7 @@ const ConstellationLabels = ({
   physicsState: React.MutableRefObject<Record<string, { position: THREE.Vector3 }>> 
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const materialRefs = useRef<THREE.MeshBasicMaterial[]>([]);
+  const constellationRefs = useRef<(any | null)[]>([]);
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -26,11 +26,10 @@ const ConstellationLabels = ({
     const cameraDist = state.camera.position.length();
     
     // 遠ざかるほど濃くなる（近くでは消える）
-    // cameraDist が 10 以下の時は透明(0)、20 以上の時は不透明(1)
     const targetOpacity = THREE.MathUtils.clamp((cameraDist - 10) / 10, 0, 0.8);
 
-    constellationRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
+    constellationRefs.current.forEach((textMesh, i) => {
+      if (!textMesh) return;
       const c = constellations[i];
       if (!c) return;
 
@@ -47,42 +46,39 @@ const ConstellationLabels = ({
         }
       });
       
-      if (count > 0) {
+      if (count > 0 && textMesh.position && textMesh.quaternion) {
         // 重心の少し上に配置
-        mesh.position.set(centerX / count, (centerY / count) + 2.0, centerZ / count);
+        textMesh.position.set(centerX / count, (centerY / count) + 2.0, centerZ / count);
         // カメラの方を向く（ビルボード）
-        mesh.quaternion.copy(state.camera.quaternion);
+        textMesh.quaternion.copy(state.camera.quaternion);
       }
       
-      if (materialRefs.current[i]) {
-        materialRefs.current[i].opacity = THREE.MathUtils.lerp(materialRefs.current[i].opacity, targetOpacity, 0.1);
+      if (textMesh.material) {
+        textMesh.material.opacity = THREE.MathUtils.lerp(textMesh.material.opacity || 0, targetOpacity, 0.1);
+        textMesh.material.transparent = true;
+      }
+      if (textMesh.fillOpacity !== undefined) {
+        textMesh.fillOpacity = THREE.MathUtils.lerp(textMesh.fillOpacity || 0, targetOpacity, 0.1);
       }
     });
   });
-
-  const constellationRefs = useRef<(THREE.Mesh | null)[]>([]);
 
   return (
     <group ref={groupRef}>
       {constellations.map((c, i) => (
         <Text
           key={i}
-          ref={el => constellationRefs.current[i] = el as any}
+          ref={el => constellationRefs.current[i] = el}
           fontSize={0.8}
           color="#0ff"
           anchorX="center"
           anchorY="middle"
           font="https://fonts.gstatic.com/s/dotgothic16/v1/XoHm2X49-ALh7UvH8y4q07GZ0A.woff"
           renderOrder={10}
-          onInstancedGetMaterial={(mat) => {
-             // @ts-ignore
-             materialRefs.current[i] = mat;
-             mat.transparent = true;
-             mat.opacity = 0;
-          }}
+          depthTest={false}
+          fillOpacity={0}
         >
           {`✦ ${c.label} ✦`}
-          <meshBasicMaterial attach="material" color="#0ff" transparent opacity={0} depthTest={false} />
         </Text>
       ))}
     </group>

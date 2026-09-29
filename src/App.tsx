@@ -5,6 +5,8 @@ import { UI } from './components/UI';
 import { useStore } from './store';
 import { supabase } from './supabase';
 
+import { ErrorBoundary } from './ErrorBoundary';
+
 function App() {
   const fetchInitialData = useStore(state => state.fetchInitialData);
 
@@ -27,12 +29,14 @@ function App() {
   }, [fetchInitialData]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <Canvas onPointerMissed={() => useStore.getState().setFocusedNoteId(null)}>
-        <Scene />
-      </Canvas>
-      <UI />
-    </div>
+    <ErrorBoundary>
+      <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+        <Canvas onPointerMissed={() => useStore.getState().setFocusedNoteId(null)}>
+          <Scene />
+        </Canvas>
+        <UI />
+      </div>
+    </ErrorBoundary>
   );
 }
 
