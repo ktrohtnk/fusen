@@ -240,7 +240,13 @@ export const Scene = () => {
           repulseForce = 0.1;
         }
 
-        if (dist > 0.01 && dist < repulseRadius) {
+        // 親子関係にある場合は反発力を無効化（親が子に弾かれて猛スピードで吹っ飛ぶのを防ぐ）
+        const isConnected = connections.some(c => 
+          (c.from_note_id === idI && c.to_note_id === idJ) || 
+          (c.from_note_id === idJ && c.to_note_id === idI)
+        );
+
+        if (!isConnected && dist > 0.01 && dist < repulseRadius) {
           // 距離が近すぎる場合の物理爆発（Infinity）を防ぐため、安全な下限を設ける
           const safeDist = Math.max(dist, 0.5); 
           const force = diff.normalize().multiplyScalar((1 / (safeDist * safeDist)) * repulseForce * dt);
