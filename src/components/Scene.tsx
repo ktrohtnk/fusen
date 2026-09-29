@@ -1,6 +1,6 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, Stars, Sparkles } from '@react-three/drei';
+import { OrbitControls, Environment, Stars, Sparkles, Text } from '@react-three/drei';
 import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
@@ -8,6 +8,86 @@ import { useStore } from '../store';
 import { Note } from './Note';
 import { Connections, SemanticConnections } from './Connections';
 import { cosineSimilarity } from '../utils';
+
+const ConstellationLabels = ({ 
+  constellations, 
+  physicsState 
+}: { 
+  constellations: { ids: string[], label: string }[], 
+  physicsState: React.MutableRefObject<Record<string, { position: THREE.Vector3 }>> 
+}) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const materialRefs = useRef<THREE.MeshBasicMaterial[]>([]);
+
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    
+    // カメラの距離（原点からの距離や、シーン全体の広がり具合から計算）
+    const cameraDist = state.camera.position.length();
+    
+    // 遠ざかるほど濃くなる（近くでは消える）
+    // cameraDist が 10 以下の時は透明(0)、20 以上の時は不透明(1)
+    const targetOpacity = THREE.MathUtils.clamp((cameraDist - 10) / 10, 0, 0.8);
+
+    constellationRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const c = constellations[i];
+      if (!c) return;
+
+      // 重心を計算
+      let centerX = 0, centerY = 0, centerZ = 0;
+      let count = 0;
+      c.ids.forEach(id => {
+        const pState = physicsState.current[id];
+        if (pState) {
+          centerX += pState.position.x;
+          centerY += pState.position.y;
+          centerZ += pState.position.z;
+          count++;
+        }
+      });
+      
+      if (count > 0) {
+        // 重心の少し上に配置
+        mesh.position.set(centerX / count, (centerY / count) + 2.0, centerZ / count);
+        // カメラの方を向く（ビルボード）
+        mesh.quaternion.copy(state.camera.quaternion);
+      }
+      
+      if (materialRefs.current[i]) {
+        materialRefs.current[i].opacity = THREE.MathUtils.lerp(materialRefs.current[i].opacity, targetOpacity, 0.1);
+      }
+    });
+  });
+
+  const constellationRefs = useRef<(THREE.Mesh | null)[]>([]);
+
+  return (
+    <group ref={groupRef}>
+      {constellations.map((c, i) => (
+        <Text
+          key={i}
+          ref={el => constellationRefs.current[i] = el as any}
+          fontSize={0.8}
+          color="#0ff"
+          anchorX="center"
+          anchorY="middle"
+          font="https://fonts.gstatic.com/s/dotgothic16/v1/XoHm2X49-ALh7UvH8y4q07GZ0A.woff"
+          renderOrder={10}
+          onInstancedGetMaterial={(mat) => {
+             // @ts-ignore
+             materialRefs.current[i] = mat;
+             mat.transparent = true;
+             mat.opacity = 0;
+          }}
+        >
+          {`✦ ${c.label} ✦`}
+          <meshBasicMaterial attach="material" color="#0ff" transparent opacity={0} depthTest={false} />
+        </Text>
+      ))}
+    </group>
+  );
+};
 
 export const Scene = () => {
   const notes = useStore(state => state.notes);
@@ -36,6 +116,64 @@ export const Scene = () => {
     }
     return pairs;
   }, [notes, connections]);
+
+  // 星座（クラスタ）の抽出
+  const constellations = useMemo(() => {
+    // グラフの隣接リストを作成
+    const adj: Record<string, string[]> = {};
+    notes.forEach(n => adj[n.id] = []);
+    
+    // 意味的な繋がりと、明示的な繋がりの両方をグラフの辺とする
+    semanticPairs.forEach(p => {
+      adj[p.id1]?.push(p.id2);
+      adj[p.id2]?.push(p.id1);
+    });
+    connections.forEach(c => {
+      if (adj[c.from_note_id] && adj[c.to_note_id]) {
+        adj[c.from_note_id].push(c.to_note_id);
+        adj[c.to_note_id].push(c.from_note_id);
+      }
+    });
+
+    const visited = new Set<string>();
+    const clusters: { ids: string[], label: string }[] = [];
+
+    notes.forEach(startNote => {
+      if (!visited.has(startNote.id)) {
+        const clusterIds: string[] = [];
+        const queue = [startNote.id];
+        visited.add(startNote.id);
+
+        while (queue.length > 0) {
+          const currentId = queue.shift()!;
+          clusterIds.push(currentId);
+          adj[currentId]?.forEach(neighbor => {
+            if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push(neighbor);
+            }
+          });
+        }
+
+        // 3つ以上の星が集まっている場合のみ「星座」とみなす
+        if (clusterIds.length >= 3) {
+          // クラスタ内の最古のノート、または一番文字数の多いノートを代表とする
+          const clusterNotes = clusterIds.map(id => notes.find(n => n.id === id)!).filter(Boolean);
+          // 代表ノート（一番古いものをベースにする）
+          clusterNotes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+          const repNote = clusterNotes[0];
+          
+          // ラベル作成（先頭12文字程度）
+          let labelText = repNote.text.split('\n')[0].substring(0, 15);
+          if (repNote.text.length > 15) labelText += '...';
+          
+          clusters.push({ ids: clusterIds, label: labelText });
+        }
+      }
+    });
+    
+    return clusters;
+  }, [notes, semanticPairs, connections]);
   
   const physicsState = useRef<Record<string, {
     position: THREE.Vector3;
@@ -211,6 +349,7 @@ export const Scene = () => {
 
       <Connections physicsState={physicsState} />
       <SemanticConnections physicsState={physicsState} semanticPairs={semanticPairs} />
+      <ConstellationLabels constellations={constellations} physicsState={physicsState} />
       
       {/* 宇宙のチリや星屑（奥行き可視化） */}
       <Stars radius={100} depth={50} count={3000} factor={3} saturation={0.5} fade speed={1} />
