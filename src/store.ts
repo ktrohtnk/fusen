@@ -251,7 +251,7 @@ export const useStore = create<AppState>((set, get) => ({
               parsedEmbedding = JSON.parse(n.embedding);
             } catch (e) {}
           }
-          const isInvalid = (val: any) => typeof val !== 'number' || isNaN(val) || !isFinite(val);
+          const isInvalid = (val: any) => typeof val !== 'number' || isNaN(val) || !isFinite(val) || Math.abs(val) > 1000;
           
           let fixNeeded = false;
           let nx = n.x, ny = n.y, nz = n.z;

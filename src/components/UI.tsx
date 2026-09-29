@@ -589,7 +589,7 @@ export const UI = () => {
         <div style={{ width: '32px', height: '32px', background: currentUser.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#000' }}>
           {currentUser.name}
         </div>
-        <div style={{ color: 'white', opacity: 0.8, fontSize: '16px', fontWeight: 'bold', letterSpacing: '4px' }}>FUSEN v2</div>
+        <div style={{ color: 'white', opacity: 0.8, fontSize: '16px', fontWeight: 'bold', letterSpacing: '4px' }}>FUSEN v2.1 (FIX)</div>
       </div>
 
       {/* 右上ツールバー */}
