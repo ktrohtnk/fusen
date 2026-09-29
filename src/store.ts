@@ -13,7 +13,7 @@ export const USERS: User[] = [
   { id: 'user-a', name: 'K', color: '#ff6b6b' },
   { id: 'user-b', name: '香', color: '#4ecdc4' },
   { id: 'user-c', name: 'ゆ', color: '#ffaa00' },
-  { id: 'user-d', name: 'J', color: '#88d8b0' },
+  { id: 'user-d', name: 'J', color: '#3388ff' },
   { id: 'user-e', name: 'D', color: '#b84dff' },
 ];
 
