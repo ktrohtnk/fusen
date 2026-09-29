@@ -14,7 +14,7 @@ export const USERS: User[] = [
   { id: 'user-b', name: '香', color: '#4ecdc4' },
   { id: 'user-c', name: 'ゆ', color: '#ffaa00' },
   { id: 'user-d', name: 'J', color: '#88d8b0' },
-  { id: 'user-e', name: 'D', color: '#ffb347' },
+  { id: 'user-e', name: 'D', color: '#b84dff' },
 ];
 
 export type NoteData = {
