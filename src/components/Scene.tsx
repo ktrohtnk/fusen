@@ -236,8 +236,8 @@ export const Scene = () => {
           repulseRadius = 12.0; 
           repulseForce = 1.0;
         } else if (!isStarI && !isStarJ) {
-          repulseRadius = 1.5;
-          repulseForce = 0.1;
+          repulseRadius = 0.8; // 衛星同士は重ならない程度の小さな半径で
+          repulseForce = 0.01; // 反発力も極めて弱くする
         }
 
         // 親子関係にある場合は反発力を無効化（親が子に弾かれて猛スピードで吹っ飛ぶのを防ぐ）
@@ -322,7 +322,7 @@ export const Scene = () => {
       }
 
       noteState.velocity.add(noteState.acceleration);
-      noteState.velocity.multiplyScalar(0.99);
+      noteState.velocity.multiplyScalar(0.92); // 空気抵抗を強くして動きを素早く落ち着かせる
       noteState.position.add(noteState.velocity);
       
       noteState.rotation.x = 0;
