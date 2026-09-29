@@ -253,6 +253,7 @@ export const useStore = create<AppState>((set, get) => ({
               // fallback
             }
           }
+          const safeNum = (val: any) => (typeof val === 'number' && !isNaN(val) && isFinite(val)) ? val : 0;
           return {
             id: n.id,
             user_id: n.user_id,
@@ -260,10 +261,10 @@ export const useStore = create<AppState>((set, get) => ({
             url: n.url,
             image_url: n.image_url,
             created_at: n.created_at,
-            position: new THREE.Vector3(n.x, n.y, n.z),
+            position: new THREE.Vector3(safeNum(n.x), safeNum(n.y), safeNum(n.z)),
             velocity: new THREE.Vector3(0, 0, 0),
             acceleration: new THREE.Vector3(0, 0, 0),
-            rotation: new THREE.Euler(n.rotation_x, n.rotation_y, n.rotation_z),
+            rotation: new THREE.Euler(safeNum(n.rotation_x), safeNum(n.rotation_y), safeNum(n.rotation_z)),
             angularVelocity: new THREE.Euler(0, 0, 0),
             embedding: parsedEmbedding
           };
