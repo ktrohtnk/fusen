@@ -366,8 +366,10 @@ export const Scene = () => {
       />
 
       <Connections physicsState={physicsState} />
-      <SemanticConnections physicsState={physicsState} semanticPairs={semanticPairs} />
-      <ConstellationLabels constellations={constellations} physicsState={physicsState} />
+      {/* 
+        <SemanticConnections physicsState={physicsState} semanticPairs={semanticPairs} />
+        <ConstellationLabels constellations={constellations} physicsState={physicsState} />
+      */}
       
       {/* 宇宙のチリや星屑（奥行き可視化） */}
       <Stars radius={100} depth={50} count={3000} factor={3} saturation={0.5} fade speed={1} />
