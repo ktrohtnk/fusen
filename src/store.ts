@@ -244,16 +244,34 @@ export const useStore = create<AppState>((set, get) => ({
       if (connError) console.error("Fetch connections error:", connError);
 
       if (notesData) {
-        const loadedNotes = notesData.map(n => {
+        const loadedNotes = await Promise.all(notesData.map(async (n) => {
           let parsedEmbedding;
           if (n.embedding) {
             try {
               parsedEmbedding = JSON.parse(n.embedding);
-            } catch (e) {
-              // fallback
-            }
+            } catch (e) {}
           }
-          const safeNum = (val: any) => (typeof val === 'number' && !isNaN(val) && isFinite(val)) ? val : 0;
+          const isInvalid = (val: any) => typeof val !== 'number' || isNaN(val) || !isFinite(val);
+          
+          let fixNeeded = false;
+          let nx = n.x, ny = n.y, nz = n.z;
+          let rx = n.rotation_x, ry = n.rotation_y, rz = n.rotation_z;
+
+          if (isInvalid(nx) || isInvalid(ny) || isInvalid(nz)) {
+             nx = 0; ny = 0; nz = 0; fixNeeded = true;
+          }
+          if (isInvalid(rx) || isInvalid(ry) || isInvalid(rz)) {
+             rx = 0; ry = 0; rz = 0; fixNeeded = true;
+          }
+
+          if (fixNeeded && supabase) {
+            console.log(`Auto-fixing corrupted note ${n.id} in Supabase`);
+            await supabase.from('notes').update({
+              x: nx, y: ny, z: nz,
+              rotation_x: rx, rotation_y: ry, rotation_z: rz
+            }).eq('id', n.id);
+          }
+
           return {
             id: n.id,
             user_id: n.user_id,
@@ -261,14 +279,14 @@ export const useStore = create<AppState>((set, get) => ({
             url: n.url,
             image_url: n.image_url,
             created_at: n.created_at,
-            position: new THREE.Vector3(safeNum(n.x), safeNum(n.y), safeNum(n.z)),
+            position: new THREE.Vector3(nx, ny, nz),
             velocity: new THREE.Vector3(0, 0, 0),
             acceleration: new THREE.Vector3(0, 0, 0),
-            rotation: new THREE.Euler(safeNum(n.rotation_x), safeNum(n.rotation_y), safeNum(n.rotation_z)),
+            rotation: new THREE.Euler(rx, ry, rz),
             angularVelocity: new THREE.Euler(0, 0, 0),
             embedding: parsedEmbedding
           };
-        });
+        }));
         set({ notes: loadedNotes });
       }
 

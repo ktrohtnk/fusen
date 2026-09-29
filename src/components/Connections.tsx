@@ -76,7 +76,7 @@ export const SemanticConnections = ({ physicsState, semanticPairs }: {
       const state1 = physicsState.current[pair.id1];
       const state2 = physicsState.current[pair.id2];
       
-      if (state1 && state2) {
+      if (state1 && state2 && !isNaN(state1.position.x) && !isNaN(state2.position.x)) {
         positions[offset * 6] = state1.position.x;
         positions[offset * 6 + 1] = state1.position.y;
         positions[offset * 6 + 2] = state1.position.z;
@@ -91,6 +91,11 @@ export const SemanticConnections = ({ physicsState, semanticPairs }: {
           colors[offset * 6 + i] = 0.0; // R
           colors[offset * 6 + i + 1] = 1.0; // G
           colors[offset * 6 + i + 2] = 1.0; // B
+        }
+      } else {
+        for(let i=0; i<6; i++) {
+           positions[offset * 6 + i] = 0;
+           colors[offset * 6 + i] = 0;
         }
       }
       offset++;

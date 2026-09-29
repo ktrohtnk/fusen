@@ -38,7 +38,7 @@ const ConstellationLabels = ({
       let count = 0;
       c.ids.forEach(id => {
         const pState = physicsState.current[id];
-        if (pState) {
+        if (pState && !isNaN(pState.position.x) && !isNaN(pState.position.y) && !isNaN(pState.position.z)) {
           centerX += pState.position.x;
           centerY += pState.position.y;
           centerZ += pState.position.z;
@@ -47,10 +47,15 @@ const ConstellationLabels = ({
       });
       
       if (count > 0 && textMesh.position && textMesh.quaternion) {
-        // 重心の少し上に配置
-        textMesh.position.set(centerX / count, (centerY / count) + 2.0, centerZ / count);
-        // カメラの方を向く（ビルボード）
-        textMesh.quaternion.copy(state.camera.quaternion);
+        const px = centerX / count;
+        const py = (centerY / count) + 2.0;
+        const pz = centerZ / count;
+        if (!isNaN(px) && !isNaN(py) && !isNaN(pz)) {
+          // 重心の少し上に配置
+          textMesh.position.set(px, py, pz);
+          // カメラの方を向く（ビルボード）
+          textMesh.quaternion.copy(state.camera.quaternion);
+        }
       }
       
       if (textMesh.material) {
@@ -319,12 +324,14 @@ export const Scene = () => {
 
     if (focusedNoteId && physicsState.current[focusedNoteId]) {
       const targetPos = physicsState.current[focusedNoteId].position;
-      const cameraTargetPos = targetPos.clone().add(new THREE.Vector3(0, 0, 2.5));
-      
-      state.camera.position.lerp(cameraTargetPos, 0.15);
-      
-      if (controlsRef.current) {
-        controlsRef.current.target.lerp(targetPos, 0.15);
+      if (!isNaN(targetPos.x) && !isNaN(targetPos.y) && !isNaN(targetPos.z)) {
+        const cameraTargetPos = targetPos.clone().add(new THREE.Vector3(0, 0, 2.5));
+        
+        state.camera.position.lerp(cameraTargetPos, 0.15);
+        
+        if (controlsRef.current) {
+          controlsRef.current.target.lerp(targetPos, 0.15);
+        }
       }
     }
   });
