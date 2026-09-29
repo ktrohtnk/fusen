@@ -345,21 +345,56 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
   const isMobile = useIsMobile();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const sortedNotes = [...notes]
-    .filter(n => {
-      if (!dateFilter) return true;
-      const dateKey = new Date(n.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
-      return dateKey === dateFilter;
-    })
-    // 過去のものから順に（新しいものが下に来るように）ソート
-    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  // スレッド形式（恒星の下に衛星をぶら下げる）にソート
+  const threadedNotes = useMemo(() => {
+    if (dateFilter) {
+      return [...notes]
+        .filter(n => {
+          const dateKey = new Date(n.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+          return dateKey === dateFilter;
+        })
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map(n => ({ note: n, depth: connections.some(c => c.to_note_id === n.id) ? 1 : 0 }));
+    }
+
+    const childrenMap = new Map<string, string[]>();
+    connections.forEach(c => {
+      if (!childrenMap.has(c.from_note_id)) childrenMap.set(c.from_note_id, []);
+      childrenMap.get(c.from_note_id)!.push(c.to_note_id);
+    });
+
+    const isChild = (id: string) => connections.some(c => c.to_note_id === id);
+    const rootNotes = notes.filter(n => !isChild(n.id));
+    
+    rootNotes.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+    const result: { note: typeof notes[0], depth: number }[] = [];
+
+    const addChildren = (parentId: string, depth: number) => {
+      const childrenIds = childrenMap.get(parentId) || [];
+      const children = childrenIds.map(id => notes.find(n => n.id === id)).filter(Boolean) as typeof notes;
+      children.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      
+      children.forEach(child => {
+        result.push({ note: child, depth });
+        addChildren(child.id, depth + 1);
+      });
+    };
+
+    rootNotes.forEach(root => {
+      result.push({ note: root, depth: 0 });
+      addChildren(root.id, 1);
+    });
+
+    return result;
+  }, [notes, connections, dateFilter]);
 
   // 新しい投稿が来た時、または開いた時に一番下までスクロール
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [sortedNotes.length]);
+  }, [threadedNotes.length]);
 
   const panelStyle: React.CSSProperties = isMobile ? {
     position: 'absolute',
@@ -399,50 +434,74 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', pointerEvents: 'auto' }}>
-        {sortedNotes.length === 0 && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' }}>
+        {threadedNotes.length === 0 && (
           <div style={{ color: '#555', fontSize: '12px' }}>NO SIGNALS YET.</div>
         )}
-        {sortedNotes.map(note => {
+        {threadedNotes.map(({ note, depth }) => {
           const u = USERS.find(u => u.id === note.user_id) || USERS[0];
-          const isChild = connections.some(c => c.to_note_id === note.id);
           const isFocused = focusedNoteId === note.id;
+          
+          const indent = depth * 20;
+          const isChild = depth > 0;
 
           return (
-            <div
-              key={note.id}
-              onClick={() => setFocusedNoteId(isFocused ? null : note.id)}
-              style={{
-                background: isFocused ? u.color : '#0a0f1a',
-                color: isFocused ? '#000' : '#fff',
-                padding: '12px',
-                cursor: 'pointer',
-                border: `2px solid ${u.color}`,
-                boxShadow: `4px 4px 0px ${u.color}50`,
-                marginLeft: isChild ? '24px' : '0px',
-                opacity: isChild ? 0.85 : 1,
-              }}
-              onMouseOver={(e) => {
-                if (!isFocused) {
-                  e.currentTarget.style.background = `${u.color}33`;
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isFocused) {
-                  e.currentTarget.style.background = '#0a0f1a';
-                }
-              }}
-            >
-              <div style={{ color: isFocused ? '#000' : '#aaa', fontSize: '10px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>
-                  {isChild ? '↳ SAT ' : '● STAR '}
-                  <span style={{ marginLeft: '4px' }}>
-                    {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <div key={note.id} style={{ display: 'flex', flexDirection: 'column' }}>
+              {depth === 0 && <div style={{ height: '8px' }} />}
+              
+              <div
+                onClick={() => setFocusedNoteId(isFocused ? null : note.id)}
+                style={{
+                  background: isFocused ? u.color : '#0a0f1a',
+                  color: isFocused ? '#000' : '#fff',
+                  padding: '12px',
+                  cursor: 'pointer',
+                  border: `2px solid ${u.color}`,
+                  boxShadow: isFocused ? 'none' : `4px 4px 0px ${u.color}50`,
+                  marginLeft: `${indent}px`,
+                  position: 'relative',
+                  opacity: isChild ? 0.9 : 1,
+                  transform: isFocused ? 'translate(2px, 2px)' : 'none',
+                  transition: 'all 0.1s ease',
+                }}
+                onMouseOver={(e) => {
+                  if (!isFocused) {
+                    e.currentTarget.style.background = `${u.color}33`;
+                    e.currentTarget.style.transform = 'translate(2px, 2px)';
+                    e.currentTarget.style.boxShadow = `2px 2px 0px ${u.color}50`;
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!isFocused) {
+                    e.currentTarget.style.background = '#0a0f1a';
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = `4px 4px 0px ${u.color}50`;
+                  }
+                }}
+              >
+                {isChild && (
+                  <div style={{
+                    position: 'absolute',
+                    left: '-16px',
+                    top: '20px',
+                    width: '12px',
+                    height: '2px',
+                    background: `${u.color}80`,
+                    pointerEvents: 'none'
+                  }} />
+                )}
+
+                <div style={{ color: isFocused ? '#000' : '#aaa', fontSize: '10px', marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>
+                    {isChild ? '↳ SAT ' : '✦ STAR '}
+                    <span style={{ marginLeft: '4px' }}>
+                      {new Date(note.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </span>
-                </span>
-              </div>
-              <div style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {note.text || (note.image_url ? '[IMAGE]' : '---')}
+                </div>
+                <div style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {note.text || (note.image_url ? '[IMAGE]' : '---')}
+                </div>
               </div>
             </div>
           );
