@@ -271,17 +271,17 @@ export const Scene = () => {
           if (tangent.lengthSq() < 0.001) tangent = new THREE.Vector3(1, 0, 0); 
           
           if (!stateTo.isDragging) {
-            stateTo.acceleration.add(tangent.multiplyScalar(0.02 * dt));
+            stateTo.acceleration.add(tangent.multiplyScalar(0.005 * dt)); // スピードを抑える
           }
         } else {
           // 衛星の衛星：親の下に連なるように固定する（回転せず、重なる）
           // クリックを阻害しないように、親より少し奥(-0.1)に配置する
           const targetPos = stateFrom.position.clone().add(new THREE.Vector3(0.1, -0.4, -0.1));
-          const diffToTarget = new THREE.Vector3().subVectors(targetPos, stateTo.position);
           
           if (!stateTo.isDragging) {
-            stateTo.acceleration.add(diffToTarget.multiplyScalar(10.0 * dt)); // 強めに引っ張る
-            stateTo.velocity.multiplyScalar(0.8); // 動きを抑えてピタッとくっつける
+            stateTo.position.lerp(targetPos, 0.15); // 滑らかに追従
+            stateTo.velocity.set(0, 0, 0); // 暴走を防ぐため速度を殺す
+            stateTo.acceleration.set(0, 0, 0);
           }
         }
       }
@@ -366,10 +366,12 @@ export const Scene = () => {
       />
 
       <Connections physicsState={physicsState} />
-      {/* 
+      {semanticPairs.length > 0 && (
         <SemanticConnections physicsState={physicsState} semanticPairs={semanticPairs} />
+      )}
+      {constellations.length > 0 && (
         <ConstellationLabels constellations={constellations} physicsState={physicsState} />
-      */}
+      )}
       
       {/* 宇宙のチリや星屑（奥行き可視化） */}
       <Stars radius={100} depth={50} count={3000} factor={3} saturation={0.5} fade speed={1} />
