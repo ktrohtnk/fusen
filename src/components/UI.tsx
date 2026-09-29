@@ -498,6 +498,37 @@ export const UI = () => {
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  // AI サジェストの debounce 処理
+  useEffect(() => {
+    if (!text.trim() || !isCreating) {
+      setSuggestions([]);
+      return;
+    }
+    
+    if (searchTimeoutRef.current) {
+      window.clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = window.setTimeout(async () => {
+      // 自身が入力中のテキストベクトルを計算
+      const currentEmb = await generateEmbedding(text);
+      if (currentEmb.length === 0) return;
+      
+      // 過去のノートとの類似度を計算
+      const scored = notes
+        .filter(n => n.embedding && n.embedding.length > 0)
+        .map(n => ({
+          noteId: n.id,
+          similarity: cosineSimilarity(currentEmb, n.embedding!)
+        }))
+        .filter(n => n.similarity > 0.6) // 類似度しきい値
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 3); // 最大3件
+        
+      setSuggestions(scored);
+    }, 500); // 500msのdebounce
+  }, [text, isCreating, notes]);
+
   if (!currentUser) {
     return (
       <div className="ui-layer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0f1a' }}>
@@ -530,41 +561,6 @@ export const UI = () => {
       </div>
     );
   }
-
-  // AI サジェストの debounce 処理
-  useEffect(() => {
-    if (!text.trim() || !isCreating) {
-      setSuggestions([]);
-      return;
-    }
-    
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    
-    searchTimeoutRef.current = window.setTimeout(async () => {
-      try {
-        const queryEmbedding = await generateEmbedding(text);
-        if (!queryEmbedding.length) return;
-        
-        const results = notes
-          .filter(n => n.embedding && n.embedding.length > 0)
-          .map(n => ({
-            noteId: n.id,
-            similarity: cosineSimilarity(queryEmbedding, n.embedding!)
-          }))
-          .filter(n => n.similarity > 0.5) // しきい値
-          .sort((a, b) => b.similarity - a.similarity)
-          .slice(0, 3); // 最大3件
-          
-        setSuggestions(results);
-      } catch (e) {
-        console.error("Embedding error:", e);
-      }
-    }, 500); // 500ms debounce
-    
-    return () => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    };
-  }, [text, isCreating, notes]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
