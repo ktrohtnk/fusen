@@ -343,6 +343,7 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
   const setFocusedNoteId = useStore(s => s.setFocusedNoteId);
   const focusedNoteId = useStore(s => s.focusedNoteId);
   const isMobile = useIsMobile();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const sortedNotes = [...notes]
     .filter(n => {
@@ -350,13 +351,20 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
       const dateKey = new Date(n.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
       return dateKey === dateFilter;
     })
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    // 過去のものから順に（新しいものが下に来るように）ソート
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+  // 新しい投稿が来た時、または開いた時に一番下までスクロール
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [sortedNotes.length]);
 
   const panelStyle: React.CSSProperties = isMobile ? {
     position: 'absolute',
-    top: '10%', left: '50%',
-    transform: 'translateX(-50%)',
-    width: '95%',
+    top: '10%', left: '5%', right: '5%',
+    width: 'auto',
     height: '80vh',
     background: 'rgba(10, 15, 26, 0.95)',
     zIndex: 90,
@@ -376,7 +384,7 @@ const TimelineView = ({ dateFilter, onClearFilter, onClose }: { dateFilter: stri
   };
 
   return (
-    <div style={panelStyle} className="ui-content custom-scrollbar">
+    <div ref={scrollRef} style={panelStyle} className="ui-content custom-scrollbar">
       {/* フィルターヘッダー & 閉じるボタン */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', pointerEvents: 'auto' }}>
         {dateFilter ? (
